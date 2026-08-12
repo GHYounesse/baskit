@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CartController extends Controller
@@ -12,6 +12,7 @@ class CartController extends Controller
     public function index(Request $request)
     {
         $cart = $this->currentCart($request);
+
         return Inertia::render('Cart/Index', [
             'cart' => $cart->load('items.product'),
         ]);
@@ -40,12 +41,14 @@ class CartController extends Controller
     {
         $request->validate(['quantity' => 'required|integer|min:1']);
         $cartItem->update(['quantity' => $request->quantity]);
+
         return back();
     }
 
     public function destroy(CartItem $cartItem)
     {
         $cartItem->delete();
+
         return back();
     }
 

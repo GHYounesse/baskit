@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('product_name'); 
+            $table->string('product_name');
             $table->unsignedInteger('unit_price_cents');
             $table->unsignedInteger('quantity');
             $table->timestamps();

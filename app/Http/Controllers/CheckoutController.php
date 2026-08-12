@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Order;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Stripe\StripeClient;
 
@@ -23,6 +23,7 @@ class CheckoutController extends Controller
             'stripeKey' => config('services.stripe.key'),
         ]);
     }
+
     public function createPaymentIntent(Request $request)
     {
         $cart = Cart::with('items.product')->where('user_id', $request->user()->id)->firstOrFail();

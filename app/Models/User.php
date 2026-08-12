@@ -22,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin'
+        'is_admin',
     ];
 
     /**
@@ -52,6 +52,7 @@ class User extends Authenticatable
     {
         return (bool) $this->is_admin;
     }
+
     public function orders()
     {
         return $this->hasMany(Order::class);

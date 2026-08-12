@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('pending'); 
+            $table->string('status')->default('pending');
             $table->unsignedInteger('total_cents');
             $table->string('stripe_payment_intent_id')->nullable();
             $table->json('shipping_address')->nullable();

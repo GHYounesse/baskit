@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Category;
-use Inertia\Inertia;
+use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
@@ -33,9 +33,10 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'is_active' => 'boolean',
         ]);
-        $data['slug'] = Str::slug($data['name']) . '-' . uniqid();
+        $data['slug'] = Str::slug($data['name']).'-'.uniqid();
 
         Product::create($data);
+
         return redirect()->route('admin.products.index')->with('success', 'Product created.');
     }
 
@@ -59,12 +60,14 @@ class ProductController extends Controller
         ]);
 
         $product->update($data);
+
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
+
         return back()->with('success', 'Product deleted.');
     }
 }

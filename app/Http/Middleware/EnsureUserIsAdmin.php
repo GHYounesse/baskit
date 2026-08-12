@@ -18,6 +18,7 @@ class EnsureUserIsAdmin
         if (! $request->user() || ! $request->user()->isAdmin()) {
             abort(403);
         }
+
         return $next($request);
     }
 }

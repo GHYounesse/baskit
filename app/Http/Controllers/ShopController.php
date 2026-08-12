@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ShopController extends Controller
@@ -13,10 +13,8 @@ class ShopController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->when($request->category, fn ($q, $slug) =>
-                $q->whereHas('category', fn ($q) => $q->where('slug', $slug)))
-            ->when($request->search, fn ($q, $term) =>
-                $q->where('name', 'like', "%{$term}%"))
+            ->when($request->category, fn ($q, $slug) => $q->whereHas('category', fn ($q) => $q->where('slug', $slug)))
+            ->when($request->search, fn ($q, $term) => $q->where('name', 'like', "%{$term}%"))
             ->latest()
             ->paginate(12)
             ->withQueryString();

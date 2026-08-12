@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Order;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -20,6 +20,7 @@ class OrderController extends Controller
     {
         $request->validate(['status' => 'required|in:pending,paid,shipped,cancelled']);
         $order->update(['status' => $request->status]);
+
         return back()->with('success', 'Order updated.');
     }
 }
