@@ -1,3 +1,4 @@
+import ShopLayout from '@/Layouts/ShopLayout';
 import { router, Link } from '@inertiajs/react';
 
 export default function Index({ cart }) {
@@ -26,3 +27,5 @@ export default function Index({ cart }) {
     </div>
   );
 }
+
+Index.layout = (page) => <ShopLayout>{page}</ShopLayout>;

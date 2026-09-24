@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import ShopLayout from '@/Layouts/ShopLayout';
+import { useState, useEffect, useMemo } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { router, usePage } from '@inertiajs/react';
@@ -40,20 +41,20 @@ function PaymentForm({ clientSecret }) {
 
 export default function Index({ cart, stripeKey }) {
   const [clientSecret, setClientSecret] = useState(null);
-  const stripePromise = loadStripe(stripeKey);
+  const [error, setError] = useState(null);
+  const stripePromise = useMemo(() => loadStripe(stripeKey), [stripeKey]);
 
   useEffect(() => {
-    fetch('/checkout/payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-    })
-        .then((r) => r.json())
-        .then((data) => setClientSecret(data.clientSecret));
-    }, []);
+    window.axios
+      .post('/checkout/payment-intent')
+      .then((res) => setClientSecret(res.data.clientSecret))
+      .catch((err) => setError(err.response?.data?.message || 'Unable to start checkout.'));
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+      {error && <p className="text-red-600 mb-4">{error}</p>}
       {clientSecret && (
         <Elements stripe={stripePromise} options={{ clientSecret }}>
           <PaymentForm clientSecret={clientSecret} />
@@ -62,3 +63,5 @@ export default function Index({ cart, stripeKey }) {
     </div>
   );
 }
+
+Index.layout = (page) => <ShopLayout>{page}</ShopLayout>;

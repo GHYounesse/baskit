@@ -1,3 +1,4 @@
+import ShopLayout from '@/Layouts/ShopLayout';
 import { useForm } from '@inertiajs/react';
 
 export default function Show({ product }) {
@@ -32,3 +33,5 @@ export default function Show({ product }) {
     </div>
   );
 }
+
+Show.layout = (page) => <ShopLayout>{page}</ShopLayout>;
