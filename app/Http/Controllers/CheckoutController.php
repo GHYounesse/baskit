@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
-use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use RuntimeException;
 use Stripe\StripeClient;
 
 class CheckoutController extends Controller
@@ -27,6 +29,17 @@ class CheckoutController extends Controller
     public function createPaymentIntent(Request $request)
     {
         $cart = Cart::with('items.product')->where('user_id', $request->user()->id)->firstOrFail();
+
+        if ($cart->items->isEmpty()) {
+            return response()->json(['message' => 'Your cart is empty.'], 422);
+        }
+
+        foreach ($cart->items as $item) {
+            if ($item->product->stock < $item->quantity) {
+                return response()->json(['message' => "Not enough stock for {$item->product->name}."], 422);
+            }
+        }
+
         $total = $cart->items->sum(fn ($item) => $item->quantity * $item->product->price_cents);
 
         $stripe = new StripeClient(config('services.stripe.secret'));
@@ -39,34 +52,38 @@ class CheckoutController extends Controller
         return response()->json(['clientSecret' => $intent->client_secret]);
     }
 
-    public function complete(Request $request)
+    public function complete(Request $request, OrderService $orders)
     {
         $data = $request->validate([
             'payment_intent_id' => 'required|string',
             'shipping_address' => 'required|array',
+            'shipping_address.line1' => 'required|string|max:255',
+            'shipping_address.city' => 'required|string|max:255',
+            'shipping_address.country' => 'required|string|size:2',
         ]);
 
-        $cart = Cart::with('items.product')->where('user_id', $request->user()->id)->firstOrFail();
+        // Never trust the client: fetch the intent from Stripe and verify it.
+        $stripe = new StripeClient(config('services.stripe.secret'));
+        $intent = $stripe->paymentIntents->retrieve($data['payment_intent_id']);
 
-        $order = Order::create([
-            'user_id' => $request->user()->id,
-            'status' => 'paid',
-            'total_cents' => $cart->items->sum(fn ($i) => $i->quantity * $i->product->price_cents),
-            'stripe_payment_intent_id' => $data['payment_intent_id'],
-            'shipping_address' => $data['shipping_address'],
-        ]);
-
-        foreach ($cart->items as $item) {
-            $order->items()->create([
-                'product_id' => $item->product_id,
-                'product_name' => $item->product->name,
-                'unit_price_cents' => $item->product->price_cents,
-                'quantity' => $item->quantity,
-            ]);
-            $item->product->decrement('stock', $item->quantity);
+        if ((int) ($intent->metadata['user_id'] ?? 0) !== $request->user()->id) {
+            abort(403);
         }
 
-        $cart->items()->delete();
+        if ($intent->status !== 'succeeded') {
+            return back()->withErrors(['payment' => 'Payment was not completed.']);
+        }
+
+        try {
+            $order = $orders->createFromPaymentIntent($intent, $data['shipping_address']);
+        } catch (InsufficientStockException $e) {
+            $stripe->refunds->create(['payment_intent' => $intent->id]);
+
+            return redirect()->route('cart.index')
+                ->withErrors(['stock' => $e->getMessage().' Your payment has been refunded.']);
+        } catch (RuntimeException $e) {
+            return redirect()->route('cart.index')->withErrors(['payment' => $e->getMessage()]);
+        }
 
         return redirect()->route('orders.show', $order)->with('success', 'Order placed!');
     }
