@@ -4,10 +4,13 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import ThemeToggle from '@/Components/ThemeToggle';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const { cartCount } = usePage().props;
+
+
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -50,6 +53,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            <ThemeToggle />
+                            {user ? (
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -92,6 +97,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Content>
                                 </Dropdown>
                             </div>
+                            ) : (
+                                <div className="flex items-center gap-4">
+
+                               </div>
+                            )}
                         </div>
 
                         <div className="-me-2 flex items-center sm:hidden">
