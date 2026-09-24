@@ -56,9 +56,11 @@ Visit `http://127.0.0.1:8000`.
 
 ### Default accounts
 
-Seeding creates an admin account:
+Seeding creates these accounts (all use the password `password`):
 
-- **Admin:** `admin@example.com` / `password`
+- **Admin:** `admin@example.com`
+- **Customer:** `customer@example.com`
+- Plus 10 random customers, useful for testing the admin order views
 
 Or register a new account through the UI — it won't have admin access.
 
