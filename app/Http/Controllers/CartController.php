@@ -39,17 +39,24 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $cartItem)
     {
+        $this->authorizeItem($request, $cartItem);
         $request->validate(['quantity' => 'required|integer|min:1']);
         $cartItem->update(['quantity' => $request->quantity]);
 
         return back();
     }
 
-    public function destroy(CartItem $cartItem)
+    public function destroy(Request $request, CartItem $cartItem)
     {
+        $this->authorizeItem($request, $cartItem);
         $cartItem->delete();
 
         return back();
+    }
+
+    private function authorizeItem(Request $request, CartItem $cartItem): void
+    {
+        abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
     }
 
     private function currentCart(Request $request): Cart
