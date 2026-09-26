@@ -1,7 +1,8 @@
 import ShopLayout from '@/Layouts/ShopLayout';
-import { router, Link } from '@inertiajs/react';
+import { router, Link, usePage } from '@inertiajs/react';
 
 export default function Index({ cart }) {
+  const { auth } = usePage().props;
   const total = cart.items.reduce((sum, i) => sum + i.quantity * i.product.price_cents, 0);
 
   return (
@@ -22,7 +23,7 @@ export default function Index({ cart }) {
       ))}
       <div className="text-right font-semibold mt-4">Total: ${(total / 100).toFixed(2)}</div>
       <Link href="/checkout" className="block text-center bg-black text-white py-2 rounded mt-4">
-        Checkout
+        {auth.user ? 'Checkout' : 'Log in to checkout'}
       </Link>
     </div>
   );
