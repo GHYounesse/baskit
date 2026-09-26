@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CartController extends Controller
 {
+    public function __construct(private CartService $carts) {}
+
     public function index(Request $request)
     {
         $cart = $this->currentCart($request);
@@ -56,11 +59,11 @@ class CartController extends Controller
 
     private function authorizeItem(Request $request, CartItem $cartItem): void
     {
-        abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
+        abort_unless($cartItem->cart_id === $this->carts->current($request)->id, 403);
     }
 
     private function currentCart(Request $request): Cart
     {
-        return Cart::firstOrCreate(['user_id' => $request->user()->id]);
+        return $this->carts->current($request);
     }
 }

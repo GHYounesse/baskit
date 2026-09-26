@@ -18,14 +18,14 @@ Route::get('/dashboard', function () {
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/products/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
+
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-    Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
-
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/payment-intent', [CheckoutController::class, 'createPaymentIntent'])->name('checkout.payment-intent');
     Route::post('/checkout/complete', [CheckoutController::class, 'complete'])->name('checkout.complete');
