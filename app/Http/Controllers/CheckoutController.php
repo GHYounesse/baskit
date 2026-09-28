@@ -58,7 +58,10 @@ class CheckoutController extends Controller
             'payment_intent_id' => 'required|string',
             'shipping_address' => 'required|array',
             'shipping_address.line1' => 'required|string|max:255',
+            'shipping_address.line2' => 'nullable|string|max:255',
             'shipping_address.city' => 'required|string|max:255',
+            'shipping_address.state' => 'nullable|string|max:255',
+            'shipping_address.postal_code' => 'nullable|string|max:20',
             'shipping_address.country' => 'required|string|size:2',
         ]);
 
