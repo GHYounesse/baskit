@@ -40,7 +40,7 @@ export default function ShopLayout({ children }) {
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-6">
                         <Link href="/">
-                            <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                            <ApplicationLogo className="h-8 w-auto" />
                         </Link>
                         <Link href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900">
                             Shop
