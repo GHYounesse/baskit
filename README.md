@@ -3,28 +3,37 @@
 [![CI](https://github.com/GHYounesse/baskit/actions/workflows/ci.yml/badge.svg)](https://github.com/GHYounesse/baskit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React**: product catalog, guest and user carts, Stripe checkout (test mode), order history, and an admin panel for products and orders.
+A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React**: product catalog, guest and user carts, Stripe checkout (test mode), order history, an admin panel, and a custom brand design system with dark mode.
 
 <!-- Add screenshots here, e.g. ![Shop](docs/screenshots/shop.png) -->
 
 ## Features
 
 **Shopping**
-- Browse products by category, with search and pagination
+- Browse products by category (as tappable chips), with search, sorting and pagination
+- Product images, with an admin upload flow and a stock-photo fallback for seeded demo data
 - Guest cart that is merged into the user's cart on login or registration
-- Stripe Elements card checkout
+- Stripe Elements card checkout, with a visible order summary and a Pay button that states the exact amount
 - Order history and order detail pages
+- Role-based redirect after login/registration: admins land on the admin dashboard, everyone else lands on the shop
 
 **Payments**
 - Payments are verified server-side against Stripe before an order is created
 - Stripe webhook (`payment_intent.succeeded`) creates the order if the user never returns to the site
 - Idempotent order creation: one order per PaymentIntent, enforced by a unique index
 - Stock is checked and locked inside a database transaction; the payment is refunded if stock runs out after paying
+- Order confirmation email, queued, sent once per order regardless of which flow (redirect or webhook) creates it
 
 **Admin**
-- Product management (create, edit, delete, activate)
-- Order list with status updates
-- Admin-only routes behind an `admin` middleware
+- Dashboard with revenue, order and product counts, and a low-stock list
+- Product management (create, edit, delete, activate, image upload), with dollar-based price input
+- Order list with inline, color-coded status updates
+- Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
+
+**Design system**
+- A custom Baskit brand palette and typeface pairing (Baloo 2 for headings, Figtree for UI), defined as CSS custom properties and wired into Tailwind
+- Full dark mode support on the shop, cart, checkout, orders and admin pages, toggled from the nav and persisted in `localStorage`
+- Shared components for nav links, pagination, flash messages, order status badges and admin forms, so the same pattern renders identically everywhere it's used
 
 **Other**
 - Authentication (register, login, password reset, profile) via Laravel Breeze
@@ -65,6 +74,7 @@ php artisan key:generate
 
 touch database/database.sqlite
 php artisan migrate --seed
+php artisan storage:link
 ```
 
 ### Configure Stripe
@@ -119,7 +129,7 @@ Seeding creates these accounts (password: `password`):
 | Admin | `admin@example.com` |
 | Customer | `customer@example.com` |
 
-It also creates 10 random customers, useful for the admin order views. Accounts you register through the UI are regular customers.
+It also creates 10 random customers, useful for the admin order views. Accounts you register through the UI are regular customers, and land on the shop after signing in; the two accounts above land on `/` and `/admin` respectively.
 
 ### Test cards
 
@@ -138,7 +148,8 @@ Use any future expiry, any CVC and any postal code.
 | `STRIPE_SECRET` | Stripe secret key (`sk_test_...`) |
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_...`) |
 | `DB_CONNECTION` | `sqlite` (default) or `mysql` |
-| `QUEUE_CONNECTION` | Queue driver (`database` by default) |
+| `QUEUE_CONNECTION` | Queue driver (`database` by default) — order confirmation emails are queued jobs |
+| `MAIL_MAILER` | `log` by default (emails write to `storage/logs/laravel.log`); set a real driver to actually deliver them |
 
 ## Scheduled tasks
 
@@ -155,14 +166,21 @@ Locally, `php artisan schedule:work` runs it.
 ```
 app/
   Http/Controllers/     Shop, cart, checkout, orders, Stripe webhook, admin
+  Http/Requests/        Form requests for cart, checkout and admin product/order actions
   Services/             CartService (guest/user carts), OrderService (order creation)
   Listeners/            MergeGuestCart (runs on login)
-  Policies/             OrderPolicy
+  Mail/                 OrderConfirmation
+  Policies/             OrderPolicy, ProductPolicy
   Console/Commands/     carts:prune-guests
+resources/css/app.css   Baskit color tokens (light + dark) as CSS custom properties
 resources/js/
   Pages/                Inertia pages (Shop, Cart, Checkout, Orders, Admin, Auth)
-  Layouts/              ShopLayout, AuthenticatedLayout
+  Layouts/              ShopLayout, AuthenticatedLayout, GuestLayout
+  Components/           Shared UI: nav links, Pagination, FlashBanner, OrderStatusBadge, form inputs
+  Components/Admin/     Admin-only shared components (product form fields)
+  utils/money.js        Cent-based money formatting shared across every page
 routes/web.php          All web routes
+tailwind.config.js      Maps the Baskit color tokens and fonts into Tailwind utilities
 ```
 
 ## Development
@@ -177,10 +195,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guidelines.
 
 ## Roadmap
 
-- Product image uploads
-- Shipping address form at checkout
-- Order confirmation emails
-- Admin dashboard with sales statistics
+- Dark mode / brand styling for the product detail page and the account profile pages, which still use the original Breeze styling
+- A full end-to-end test of the checkout payment flow (currently covered at the service/webhook level, not browser-driven)
+- User-facing search/sort on the admin order and product tables
 
 ## License
 
