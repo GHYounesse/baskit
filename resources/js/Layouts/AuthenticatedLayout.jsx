@@ -40,9 +40,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ApplicationLogo className="h-8 w-auto" />
                         </Link>
                         <div className="hidden items-center gap-1 sm:flex">
-                            {/* <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                Dashboard
-                            </NavLink> */}
                             {user.is_admin && (
                                 <NavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
                                     Dashboard
@@ -55,7 +52,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             <NavLink href="/orders" active={route().current('orders.*')}>
                                 My Orders
                             </NavLink>
-                            
                         </div>
                     </div>
 
@@ -111,9 +107,11 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div className={(showingNav ? 'block' : 'hidden') + ' border-t border-stroke sm:hidden'}>
                     <div className="space-y-1 py-2">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Dashboard
-                        </ResponsiveNavLink>
+                        {user.is_admin && (
+                            <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
+                                Dashboard
+                            </ResponsiveNavLink>
+                        )}
                         <ResponsiveNavLink href="/" active={route().current('shop.index')}>
                             Shop
                         </ResponsiveNavLink>
@@ -123,11 +121,6 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href="/orders" active={route().current('orders.*')}>
                             My Orders
                         </ResponsiveNavLink>
-                        {user.is_admin && (
-                            <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
-                                Admin
-                            </ResponsiveNavLink>
-                        )}
                     </div>
                     <div className="border-t border-stroke py-2">
                         <div className="px-3 py-2 text-sm font-medium text-ink-muted">{user.name}</div>
