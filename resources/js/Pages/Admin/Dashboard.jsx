@@ -1,91 +1,109 @@
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import { formatMoney } from '@/utils/money';
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-white border rounded-lg p-4">
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-2xl font-bold mt-1">{value}</div>
+    <div className="rounded-lg border border-stroke bg-surface p-4">
+      <div className="text-sm text-ink-muted">{label}</div>
+      <div className="mt-1 text-2xl font-bold text-ink">{value}</div>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div>
+      <h3 className="mb-3 font-medium text-ink">{title}</h3>
+      {children}
     </div>
   );
 }
 
 export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
   return (
-    <AuthenticatedLayout>
-      <div className="max-w-5xl mx-auto p-6 space-y-8">
-        <div className="flex gap-3">
-          <Link href="/admin/products" className="text-sm text-blue-600 hover:underline">Manage products</Link>
-          <span className="text-gray-300">•</span>
-          <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline">Manage orders</Link>
-        </div>
+    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Admin dashboard</h2>}>
+      <div className="bg-canvas text-ink">
+        <div className="mx-auto max-w-5xl space-y-8 px-6 py-8">
+          <Head title="Admin dashboard" />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Revenue" value={formatMoney(stats.revenue_cents)} />
-          <StatCard label="Orders" value={stats.order_count} />
-          <StatCard label="Products" value={stats.product_count} />
-          <StatCard label="Low stock" value={stats.low_stock_count} />
-        </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <StatCard label="Revenue" value={formatMoney(stats.revenue_cents)} />
+            <StatCard label="Orders" value={stats.order_count} />
+            <StatCard label="Products" value={stats.product_count} />
+            <StatCard label="Low stock" value={stats.low_stock_count} />
+          </div>
 
-        <div>
-          <h3 className="font-semibold mb-3">Low stock products</h3>
-          {lowStockProducts.length === 0 ? (
-            <p className="text-sm text-gray-500">Nothing is running low.</p>
-          ) : (
-            <table className="w-full bg-white border rounded-lg text-sm">
-              <thead>
-                <tr className="text-left border-b bg-gray-50">
-                  <th className="p-3">Product</th>
-                  <th className="p-3">Stock left</th>
-                  <th className="p-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lowStockProducts.map((product) => (
-                  <tr key={product.id} className="border-b">
-                    <td className="p-3">{product.name}</td>
-                    <td className={`p-3 ${product.stock === 0 ? 'text-red-600 font-semibold' : ''}`}>
-                      {product.stock === 0 ? 'Out of stock' : product.stock}
-                    </td>
-                    <td className="p-3 text-right">
-                      <Link href={`/admin/products/${product.id}/edit`} className="text-blue-600">Edit</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          <Section title="Low stock products">
+            {lowStockProducts.length === 0 ? (
+              <p className="text-sm text-ink-muted">Nothing is running low.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-stroke bg-surface">
+                <table className="w-full min-w-[480px] text-sm">
+                  <thead>
+                    <tr className="border-b border-stroke text-left text-ink-muted">
+                      <th className="p-3 font-medium">Product</th>
+                      <th className="p-3 font-medium">Stock left</th>
+                      <th className="p-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lowStockProducts.map((product) => (
+                      <tr key={product.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
+                        <td className="p-3 text-ink">{product.name}</td>
+                        <td className="p-3">
+                          {product.stock === 0 ? (
+                            <span className="inline-block rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-300">
+                              Out of stock
+                            </span>
+                          ) : (
+                            <span className="font-medium text-amber-600">{product.stock}</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <Link href={`/admin/products/${product.id}/edit`} className="text-primary hover:text-primary-hover">
+                            Edit
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Section>
 
-        <div>
-          <h3 className="font-semibold mb-3">Recent orders</h3>
-          {recentOrders.length === 0 ? (
-            <p className="text-sm text-gray-500">No orders yet.</p>
-          ) : (
-            <table className="w-full bg-white border rounded-lg text-sm">
-              <thead>
-                <tr className="text-left border-b bg-gray-50">
-                  <th className="p-3">Order</th>
-                  <th className="p-3">Customer</th>
-                  <th className="p-3">Total</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Placed</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.map((order) => (
-                  <tr key={order.id} className="border-b">
-                    <td className="p-3">#{order.id}</td>
-                    <td className="p-3">{order.user?.name ?? '—'}</td>
-                    <td className="p-3">{formatMoney(order.total_cents)}</td>
-                    <td className="p-3 capitalize">{order.status}</td>
-                    <td className="p-3">{new Date(order.created_at).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <Section title="Recent orders">
+            {recentOrders.length === 0 ? (
+              <p className="text-sm text-ink-muted">No orders yet.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-stroke bg-surface">
+                <table className="w-full min-w-[560px] text-sm">
+                  <thead>
+                    <tr className="border-b border-stroke text-left text-ink-muted">
+                      <th className="p-3 font-medium">Order</th>
+                      <th className="p-3 font-medium">Customer</th>
+                      <th className="p-3 font-medium text-right">Total</th>
+                      <th className="p-3 font-medium">Status</th>
+                      <th className="p-3 font-medium">Placed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
+                        <td className="p-3 text-ink">#{order.id}</td>
+                        <td className="p-3 text-ink-muted">{order.user?.name ?? '—'}</td>
+                        <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
+                        <td className="p-3"><OrderStatusBadge status={order.status} /></td>
+                        <td className="p-3 text-ink-muted">{new Date(order.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Section>
         </div>
       </div>
     </AuthenticatedLayout>
