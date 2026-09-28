@@ -12,6 +12,14 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        Product::factory()->count(40)->create();
+        Product::factory()
+            ->count(40)
+            ->create()
+            ->each(function (Product $product) {
+                // Picsum's seeded endpoint returns the same stock photo for a
+                // given seed every time, so demo products keep a stable image
+                // across reseeds without storing any files in the repo.
+                $product->update(['image_path' => "https://picsum.photos/seed/{$product->slug}/600/600"]);
+            });
     }
 }
