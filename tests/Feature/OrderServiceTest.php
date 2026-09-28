@@ -108,8 +108,8 @@ class OrderServiceTest extends TestCase
 
         app(OrderService::class)->createFromPaymentIntent($this->intent($user));
 
-        Mail::assertSent(OrderConfirmation::class, 1);
-        Mail::assertSent(OrderConfirmation::class, fn ($mail) => $mail->hasTo($user->email));
+        Mail::assertQueued(OrderConfirmation::class, 1);
+        Mail::assertQueued(OrderConfirmation::class, fn ($mail) => $mail->hasTo($user->email));
     }
 
     public function test_does_not_resend_confirmation_email_for_the_same_intent(): void
@@ -122,6 +122,6 @@ class OrderServiceTest extends TestCase
         $service->createFromPaymentIntent($this->intent($user));
         $service->createFromPaymentIntent($this->intent($user));
 
-        Mail::assertSent(OrderConfirmation::class, 1);
+        Mail::assertQueued(OrderConfirmation::class, 1);
     }
 }
