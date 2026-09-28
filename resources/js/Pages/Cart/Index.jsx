@@ -1,4 +1,5 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import { formatMoney } from '@/utils/money';
 import { router, Link, usePage } from '@inertiajs/react';
 
 export default function Index({ cart }) {
@@ -28,7 +29,7 @@ export default function Index({ cart }) {
           <button onClick={() => router.delete(`/cart/${item.id}`)} className="text-red-600">Remove</button>
         </div>
       ))}
-      <div className="text-right font-semibold mt-4">Total: ${(total / 100).toFixed(2)}</div>
+      <div className="text-right font-semibold mt-4">Total: {formatMoney(total)}</div>
       <Link href="/checkout" className="block text-center bg-black text-white py-2 rounded mt-4">
         {auth.user ? 'Checkout' : 'Log in to checkout'}
       </Link>

@@ -1,4 +1,5 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import { formatMoney } from '@/utils/money';
 import { Link, router } from '@inertiajs/react';
 
 export default function Index({ products, categories, filters }) {
@@ -52,7 +53,7 @@ export default function Index({ products, categories, filters }) {
               )}
             </div>
             <div className="font-semibold">{product.name}</div>
-            <div className="text-gray-600">${(product.price_cents / 100).toFixed(2)}</div>
+            <div className="text-gray-600">{formatMoney(product.price_cents)}</div>
           </Link>
         ))}
       </div>

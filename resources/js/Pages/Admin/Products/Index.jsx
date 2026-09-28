@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatMoney } from '@/utils/money';
 
 export default function Index({ products }) {
   const destroy = (id) => {
@@ -41,7 +42,7 @@ export default function Index({ products }) {
                 </td>
                 <td className="p-3">{product.name}</td>
                 <td className="p-3">{product.category?.name ?? '—'}</td>
-                <td className="p-3">${(product.price_cents / 100).toFixed(2)}</td>
+                <td className="p-3">{formatMoney(product.price_cents)}</td>
                 <td className="p-3">{product.stock}</td>
                 <td className="p-3">{product.is_active ? 'Yes' : 'No'}</td>
                 <td className="p-3 text-right space-x-3">

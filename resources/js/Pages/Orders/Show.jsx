@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatMoney } from '@/utils/money';
 
 export default function Show({ order }) {
   return (
@@ -28,14 +29,14 @@ export default function Show({ order }) {
               <tr key={item.id} className="border-b">
                 <td className="py-2">{item.product_name}</td>
                 <td className="py-2">{item.quantity}</td>
-                <td className="py-2 text-right">${((item.unit_price_cents * item.quantity) / 100).toFixed(2)}</td>
+                <td className="py-2 text-right">{formatMoney(item.unit_price_cents * item.quantity)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="text-right font-bold text-lg mb-6">
-          Total: ${(order.total_cents / 100).toFixed(2)}
+          Total: {formatMoney(order.total_cents)}
         </div>
 
         {order.shipping_address && (

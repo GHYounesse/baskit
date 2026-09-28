@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatMoney } from '@/utils/money';
 
 function StatCard({ label, value }) {
   return (
@@ -21,7 +22,7 @@ export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Revenue" value={`$${(stats.revenue_cents / 100).toFixed(2)}`} />
+          <StatCard label="Revenue" value={formatMoney(stats.revenue_cents)} />
           <StatCard label="Orders" value={stats.order_count} />
           <StatCard label="Products" value={stats.product_count} />
           <StatCard label="Low stock" value={stats.low_stock_count} />
@@ -77,7 +78,7 @@ export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
                   <tr key={order.id} className="border-b">
                     <td className="p-3">#{order.id}</td>
                     <td className="p-3">{order.user?.name ?? '—'}</td>
-                    <td className="p-3">${(order.total_cents / 100).toFixed(2)}</td>
+                    <td className="p-3">{formatMoney(order.total_cents)}</td>
                     <td className="p-3 capitalize">{order.status}</td>
                     <td className="p-3">{new Date(order.created_at).toLocaleDateString()}</td>
                   </tr>

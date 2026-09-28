@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatMoney } from '@/utils/money';
 
 const STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
 
@@ -22,7 +23,7 @@ export default function Index({ orders }) {
               <tr key={order.id} className="border-b">
                 <td className="p-3">#{order.id}</td>
                 <td className="p-3">{order.user.name} ({order.user.email})</td>
-                <td className="p-3">${(order.total_cents / 100).toFixed(2)}</td>
+                <td className="p-3">{formatMoney(order.total_cents)}</td>
                 <td className="p-3">
                   <select
                     value={order.status}

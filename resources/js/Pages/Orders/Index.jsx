@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatMoney } from '@/utils/money';
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -31,7 +32,7 @@ export default function Index({ orders }) {
                 <span className={`text-xs px-2 py-1 rounded-full capitalize ${statusColors[order.status]}`}>
                   {order.status}
                 </span>
-                <span className="font-semibold">${(order.total_cents / 100).toFixed(2)}</span>
+                <span className="font-semibold">{formatMoney(order.total_cents)}</span>
               </div>
             </Link>
           ))}

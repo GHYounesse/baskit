@@ -1,4 +1,5 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import { formatMoney } from '@/utils/money';
 import { useForm } from '@inertiajs/react';
 
 export default function Show({ product }) {
@@ -24,7 +25,7 @@ export default function Show({ product }) {
 
       <h1 className="text-2xl font-bold">{product.name}</h1>
       <p className="text-gray-600 my-2">{product.description}</p>
-      <div className="text-xl font-semibold mb-4">${(product.price_cents / 100).toFixed(2)}</div>
+      <div className="text-xl font-semibold mb-4">{formatMoney(product.price_cents)}</div>
 
       <form onSubmit={submit} className="flex gap-2 items-center">
         <input
