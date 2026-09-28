@@ -1,59 +1,64 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import { formatMoney } from '@/utils/money';
+import { Head } from '@inertiajs/react';
 
 export default function Show({ order }) {
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Order #{order.id}</h2>}>
-      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg border">
-        <div className="flex justify-between mb-6">
-          <div>
-            <div className="text-sm text-gray-500">Status</div>
-            <div className="font-semibold capitalize">{order.status}</div>
-          </div>
-          <div>
-            <div className="text-sm text-gray-500">Placed on</div>
-            <div className="font-semibold">{new Date(order.created_at).toLocaleDateString()}</div>
-          </div>
-        </div>
+    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Order #{order.id}</h2>}>
+      <div className="bg-canvas text-ink">
+        <div className="mx-auto max-w-2xl px-6 py-8">
+          <Head title={`Order #${order.id}`} />
 
-        <table className="w-full text-sm mb-6">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-2">Product</th>
-              <th className="py-2">Qty</th>
-              <th className="py-2 text-right">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.items.map((item) => (
-              <tr key={item.id} className="border-b">
-                <td className="py-2">{item.product_name}</td>
-                <td className="py-2">{item.quantity}</td>
-                <td className="py-2 text-right">{formatMoney(item.unit_price_cents * item.quantity)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="text-right font-bold text-lg mb-6">
-          Total: {formatMoney(order.total_cents)}
-        </div>
-
-        {order.shipping_address && (
-          <div>
-            <div className="text-sm text-gray-500 mb-1">Shipping address</div>
-            <div className="text-sm">
-              <div>{order.shipping_address.line1}</div>
-              {order.shipping_address.line2 && <div>{order.shipping_address.line2}</div>}
+          <div className="rounded-lg border border-stroke bg-surface p-5">
+            <div className="flex items-center justify-between">
               <div>
-                {[order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code]
-                  .filter(Boolean)
-                  .join(', ')}
+                <div className="text-sm text-ink-muted">Status</div>
+                <div className="mt-1"><OrderStatusBadge status={order.status} /></div>
               </div>
-              <div>{order.shipping_address.country}</div>
+              <div className="text-right">
+                <div className="text-sm text-ink-muted">Placed on</div>
+                <div className="mt-1 font-medium text-ink">
+                  {new Date(order.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-2 border-t border-stroke pt-4">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex justify-between gap-3 text-sm">
+                  <span className="text-ink-muted">
+                    {item.product_name} <span className="text-ink-muted/70">× {item.quantity}</span>
+                  </span>
+                  <span className="shrink-0 text-ink">
+                    {formatMoney(item.unit_price_cents * item.quantity)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 flex items-center justify-between border-t border-stroke pt-3 font-semibold text-ink">
+              <span>Total</span>
+              <span>{formatMoney(order.total_cents)}</span>
             </div>
           </div>
-        )}
+
+          {order.shipping_address && (
+            <div className="mt-6 rounded-lg border border-stroke bg-surface p-5">
+              <div className="font-medium text-ink">Shipping to</div>
+              <div className="mt-2 text-sm text-ink-muted">
+                <div>{order.shipping_address.line1}</div>
+                {order.shipping_address.line2 && <div>{order.shipping_address.line2}</div>}
+                <div>
+                  {[order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code]
+                    .filter(Boolean)
+                    .join(', ')}
+                </div>
+                <div>{order.shipping_address.country}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </AuthenticatedLayout>
   );
