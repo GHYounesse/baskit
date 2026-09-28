@@ -14,6 +14,8 @@ class ProductController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Product::class);
+
         return Inertia::render('Admin/Products/Index', [
             'products' => Product::with('category')->latest()->paginate(15),
         ]);
@@ -21,11 +23,15 @@ class ProductController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Product::class);
+
         return Inertia::render('Admin/Products/Create', ['categories' => Category::all()]);
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Product::class);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
@@ -49,6 +55,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $this->authorize('update', $product);
+
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
             'categories' => Category::all(),
@@ -57,6 +65,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->authorize('update', $product);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
@@ -84,6 +94,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->authorize('delete', $product);
+
         $this->deleteStoredImage($product);
 
         $product->delete();
