@@ -13,7 +13,7 @@ function StatCard({ label, value }) {
 
 export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Admin Dashboard</h2>}>
+    <AuthenticatedLayout>
       <div className="max-w-5xl mx-auto p-6 space-y-8">
         <div className="flex gap-3">
           <Link href="/admin/products" className="text-sm text-blue-600 hover:underline">Manage products</Link>
