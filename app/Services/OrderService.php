@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Exceptions\InsufficientStockException;
+use App\Mail\OrderConfirmation;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use RuntimeException;
 use Stripe\PaymentIntent;
 
@@ -24,7 +26,7 @@ class OrderService
 
         $userId = (int) ($intent->metadata['user_id'] ?? 0);
 
-        return DB::transaction(function () use ($intent, $userId, $shippingAddress) {
+        $order = DB::transaction(function () use ($intent, $userId, $shippingAddress) {
             if ($existing = Order::where('stripe_payment_intent_id', $intent->id)->first()) {
                 return $existing;
             }
@@ -79,5 +81,13 @@ class OrderService
 
             return $order;
         });
+
+        // Both the redirect flow and the webhook can call this for the same
+        // intent; only the one that actually created the order sends mail.
+        if ($order->wasRecentlyCreated) {
+            Mail::to($order->user->email)->queue(new OrderConfirmation($order));
+        }
+
+        return $order;
     }
 }
