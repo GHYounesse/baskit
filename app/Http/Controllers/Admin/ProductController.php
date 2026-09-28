@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -32,8 +33,14 @@ class ProductController extends Controller
             'price_cents' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'is_active' => 'boolean',
+            'image' => 'nullable|image|max:4096',
         ]);
         $data['slug'] = Str::slug($data['name']).'-'.uniqid();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('products', 'public');
+        }
+        unset($data['image']);
 
         Product::create($data);
 
@@ -57,7 +64,18 @@ class ProductController extends Controller
             'price_cents' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'is_active' => 'boolean',
+            'image' => 'nullable|image|max:4096',
+            'remove_image' => 'boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            $this->deleteStoredImage($product);
+            $data['image_path'] = $request->file('image')->store('products', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            $this->deleteStoredImage($product);
+            $data['image_path'] = null;
+        }
+        unset($data['image'], $data['remove_image']);
 
         $product->update($data);
 
@@ -66,8 +84,22 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->deleteStoredImage($product);
+
         $product->delete();
 
         return back()->with('success', 'Product deleted.');
+    }
+
+    /**
+     * Delete the product's uploaded image file, if it has one. Seeded demo
+     * products point at an external stock photo URL, not a local file, so
+     * those are left alone.
+     */
+    private function deleteStoredImage(Product $product): void
+    {
+        if ($product->image_path && ! str_starts_with($product->image_path, 'http')) {
+            Storage::disk('public')->delete($product->image_path);
+        }
     }
 }

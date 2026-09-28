@@ -1,4 +1,5 @@
 import { useForm, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function Edit({ product, categories }) {
@@ -9,11 +10,25 @@ export default function Edit({ product, categories }) {
     price_cents: product.price_cents,
     stock: product.stock,
     is_active: product.is_active,
+    image: null,
+    remove_image: false,
   });
+  const [preview, setPreview] = useState(product.image_url);
 
   const submit = (e) => {
     e.preventDefault();
     put(`/admin/products/${product.id}`);
+  };
+
+  const onImageChange = (e) => {
+    const file = e.target.files[0] ?? null;
+    setData((prev) => ({ ...prev, image: file, remove_image: false }));
+    setPreview(file ? URL.createObjectURL(file) : product.image_url);
+  };
+
+  const removeImage = () => {
+    setData((prev) => ({ ...prev, image: null, remove_image: true }));
+    setPreview(null);
   };
 
   const destroy = () => {
@@ -88,6 +103,18 @@ export default function Edit({ product, categories }) {
           />
           Active (visible in shop)
         </label>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Image</label>
+          {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded border mb-2" />}
+          <input type="file" accept="image/*" onChange={onImageChange} className="w-full" />
+          {preview && !data.image && (
+            <button type="button" onClick={removeImage} className="text-red-600 text-sm mt-1">
+              Remove image
+            </button>
+          )}
+          {errors.image && <div className="text-red-600 text-sm mt-1">{errors.image}</div>}
+        </div>
 
         <div className="flex gap-3">
           <button disabled={processing} className="bg-black text-white px-4 py-2 rounded flex-1">

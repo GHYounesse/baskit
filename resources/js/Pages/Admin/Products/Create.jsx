@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function Create({ categories }) {
@@ -9,11 +10,19 @@ export default function Create({ categories }) {
     price_cents: 0,
     stock: 0,
     is_active: true,
+    image: null,
   });
+  const [preview, setPreview] = useState(null);
 
   const submit = (e) => {
     e.preventDefault();
     post('/admin/products');
+  };
+
+  const onImageChange = (e) => {
+    const file = e.target.files[0] ?? null;
+    setData('image', file);
+    setPreview(file ? URL.createObjectURL(file) : null);
   };
 
   return (
@@ -83,6 +92,13 @@ export default function Create({ categories }) {
           />
           Active (visible in shop)
         </label>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Image</label>
+          {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded border mb-2" />}
+          <input type="file" accept="image/*" onChange={onImageChange} className="w-full" />
+          {errors.image && <div className="text-red-600 text-sm mt-1">{errors.image}</div>}
+        </div>
 
         <button disabled={processing} className="bg-black text-white px-4 py-2 rounded w-full">
           Create Product
