@@ -14,6 +14,14 @@ export default function Show({ product }) {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
+      <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+        {product.image_url ? (
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-gray-400">No image</span>
+        )}
+      </div>
+
       <h1 className="text-2xl font-bold">{product.name}</h1>
       <p className="text-gray-600 my-2">{product.description}</p>
       <div className="text-xl font-semibold mb-4">${(product.price_cents / 100).toFixed(2)}</div>

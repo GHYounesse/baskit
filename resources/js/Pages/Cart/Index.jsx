@@ -10,7 +10,14 @@ export default function Index({ cart }) {
       <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
       {cart.items.map((item) => (
         <div key={item.id} className="flex justify-between items-center border-b py-3">
-          <div>{item.product.name}</div>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center shrink-0">
+              {item.product.image_url && (
+                <img src={item.product.image_url} alt={item.product.name} className="w-full h-full object-cover" />
+              )}
+            </div>
+            {item.product.name}
+          </div>
           <input
             type="number"
             min="1"

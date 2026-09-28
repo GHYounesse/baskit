@@ -20,6 +20,7 @@ export default function Index({ products }) {
         <table className="w-full bg-white border rounded-lg text-sm">
           <thead>
             <tr className="text-left border-b bg-gray-50">
+              <th className="p-3"></th>
               <th className="p-3">Name</th>
               <th className="p-3">Category</th>
               <th className="p-3">Price</th>
@@ -31,6 +32,13 @@ export default function Index({ products }) {
           <tbody>
             {products.data.map((product) => (
               <tr key={product.id} className="border-b">
+                <td className="p-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                    {product.image_url && (
+                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                </td>
                 <td className="p-3">{product.name}</td>
                 <td className="p-3">{product.category?.name ?? '—'}</td>
                 <td className="p-3">${(product.price_cents / 100).toFixed(2)}</td>

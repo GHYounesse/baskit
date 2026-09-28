@@ -34,6 +34,13 @@ export default function Index({ products, categories, filters }) {
             href={`/products/${product.slug}`}
             className="border rounded-lg p-4 hover:shadow-lg transition"
           >
+            <div className="aspect-square mb-3 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+              {product.image_url ? (
+                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-gray-400 text-sm">No image</span>
+              )}
+            </div>
             <div className="font-semibold">{product.name}</div>
             <div className="text-gray-600">${(product.price_cents / 100).toFixed(2)}</div>
           </Link>
