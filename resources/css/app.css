@@ -1,3 +1,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --baskit-primary: #00A86B;
+  --baskit-primary-hover: #008F5B;
+  --baskit-primary-light: #DDF7ED;
+
+  --baskit-brand-dark: #063C32;
+
+  /* Constant deep-green brand surface (e.g. the auth split panel) — stays
+     the same in both themes rather than flipping with --baskit-brand-dark,
+     which inverts to a bright accent in dark mode. */
+  --baskit-panel: #063C32;
+
+  --baskit-background: #F9FBFA;
+  --baskit-surface: #FFFFFF;
+  --baskit-border: #E4EAE7;
+
+  --baskit-text: #17201D;
+  --baskit-text-muted: #66736E;
+}
+
+.dark {
+  --baskit-primary: #12C982;
+  --baskit-primary-hover: #20D991;
+  --baskit-primary-light: #123D30;
+
+  --baskit-brand-dark: #12C982;
+
+  --baskit-background: #071512;
+  --baskit-surface: #0D211C;
+  --baskit-border: #234139;
+
+  --baskit-text: #F1F7F4;
+  --baskit-text-muted: #A6B8B1;
+}

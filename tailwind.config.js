@@ -15,6 +15,25 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                display: ['"Baloo 2"', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                primary: {
+                    DEFAULT: 'var(--baskit-primary)',
+                    hover: 'var(--baskit-primary-hover)',
+                    light: 'var(--baskit-primary-light)',
+                },
+                brand: {
+                    DEFAULT: 'var(--baskit-brand-dark)',
+                },
+                panel: 'var(--baskit-panel)',
+                surface: 'var(--baskit-surface)',
+                canvas: 'var(--baskit-background)',
+                stroke: 'var(--baskit-border)',
+                ink: {
+                    DEFAULT: 'var(--baskit-text)',
+                    muted: 'var(--baskit-text-muted)',
+                },
             },
         },
     },
