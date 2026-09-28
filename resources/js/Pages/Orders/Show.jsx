@@ -42,7 +42,14 @@ export default function Show({ order }) {
           <div>
             <div className="text-sm text-gray-500 mb-1">Shipping address</div>
             <div className="text-sm">
-              {order.shipping_address.line1}, {order.shipping_address.city}, {order.shipping_address.country}
+              <div>{order.shipping_address.line1}</div>
+              {order.shipping_address.line2 && <div>{order.shipping_address.line2}</div>}
+              <div>
+                {[order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code]
+                  .filter(Boolean)
+                  .join(', ')}
+              </div>
+              <div>{order.shipping_address.country}</div>
             </div>
           </div>
         )}
