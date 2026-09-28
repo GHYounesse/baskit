@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cart\AddCartItemRequest;
+use App\Http\Requests\Cart\UpdateCartItemQuantityRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Services\CartService;
@@ -21,12 +23,9 @@ class CartController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(AddCartItemRequest $request)
     {
-        $data = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
+        $data = $request->validated();
 
         $cart = $this->currentCart($request);
 
@@ -40,11 +39,10 @@ class CartController extends Controller
         return back()->with('success', 'Added to cart.');
     }
 
-    public function update(Request $request, CartItem $cartItem)
+    public function update(UpdateCartItemQuantityRequest $request, CartItem $cartItem)
     {
         $this->authorizeItem($request, $cartItem);
-        $request->validate(['quantity' => 'required|integer|min:1']);
-        $cartItem->update(['quantity' => $request->quantity]);
+        $cartItem->update($request->validated());
 
         return back();
     }
