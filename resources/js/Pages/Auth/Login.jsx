@@ -25,13 +25,16 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
+            <h2 className="font-display text-2xl font-bold text-ink">Welcome back</h2>
+            <p className="mt-1 text-sm text-ink-muted">Log in to your Baskit account.</p>
+
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mt-6 rounded-lg bg-primary-light px-4 py-3 text-sm font-medium text-primary">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="mt-8 space-y-4">
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
 
@@ -49,7 +52,7 @@ export default function Login({ status, canResetPassword }) {
                     <InputError message={errors.email} className="mt-2" />
                 </div>
 
-                <div className="mt-4">
+                <div>
                     <InputLabel htmlFor="password" value="Password" />
 
                     <TextInput
@@ -65,7 +68,7 @@ export default function Login({ status, canResetPassword }) {
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
-                <div className="mt-4 block">
+                <div className="flex items-center justify-between pt-1">
                     <label className="flex items-center">
                         <Checkbox
                             name="remember"
@@ -74,27 +77,32 @@ export default function Login({ status, canResetPassword }) {
                                 setData('remember', e.target.checked)
                             }
                         />
-                        <span className="ms-2 text-sm text-gray-600">
+                        <span className="ms-2 text-sm text-ink-muted">
                             Remember me
                         </span>
                     </label>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="text-sm text-primary hover:text-primary-hover"
                         >
                             Forgot your password?
                         </Link>
                     )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
                 </div>
+
+                <PrimaryButton className="w-full" disabled={processing}>
+                    Log in
+                </PrimaryButton>
             </form>
+
+            <p className="mt-6 text-sm text-ink-muted">
+                New to Baskit?{' '}
+                <Link href={route('register')} className="font-medium text-primary hover:text-primary-hover">
+                    Create an account
+                </Link>
+            </p>
         </GuestLayout>
     );
 }
