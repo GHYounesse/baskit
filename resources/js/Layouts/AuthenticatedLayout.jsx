@@ -41,9 +41,17 @@ export default function AuthenticatedLayout({ header, children }) {
                         </Link>
                         <div className="hidden items-center gap-1 sm:flex">
                             {user.is_admin && (
-                                <NavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
-                                    Dashboard
-                                </NavLink>
+                                <>
+                                    <NavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
+                                        Dashboard
+                                    </NavLink>
+                                    <NavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
+                                        Products
+                                    </NavLink>
+                                    <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
+                                        Orders
+                                    </NavLink>
+                                </>
                             )}
                             <NavLink href="/" active={route().current('shop.index')}>
                                 Shop
@@ -108,9 +116,17 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className={(showingNav ? 'block' : 'hidden') + ' border-t border-stroke sm:hidden'}>
                     <div className="space-y-1 py-2">
                         {user.is_admin && (
-                            <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
-                                Dashboard
-                            </ResponsiveNavLink>
+                            <>
+                                <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
+                                    Dashboard
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
+                                    Products
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
+                                    Orders
+                                </ResponsiveNavLink>
+                            </>
                         )}
                         <ResponsiveNavLink href="/" active={route().current('shop.index')}>
                             Shop
