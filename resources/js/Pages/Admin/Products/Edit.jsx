@@ -1,6 +1,7 @@
-import { useForm, router } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ProductFormFields from '@/Components/Admin/ProductFormFields';
 
 export default function Edit({ product, categories }) {
   const { data, setData, put, processing, errors } = useForm({
@@ -38,93 +39,40 @@ export default function Edit({ product, categories }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Edit Product</h2>}>
-      <form onSubmit={submit} className="max-w-lg mx-auto p-6 bg-white border rounded-lg space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
-          <input
-            value={data.name}
-            onChange={(e) => setData('name', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.name && <div className="text-red-600 text-sm mt-1">{errors.name}</div>}
-        </div>
+    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Edit product</h2>}>
+      <div className="bg-canvas text-ink">
+        <div className="mx-auto max-w-lg px-6 py-8">
+          <Head title="Edit product" />
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Category</label>
-          <select
-            value={data.category_id}
-            onChange={(e) => setData('category_id', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="">None</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            value={data.description}
-            onChange={(e) => setData('description', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            rows={4}
-          />
-        </div>
-
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Price (cents)</label>
-            <input
-              type="number"
-              value={data.price_cents}
-              onChange={(e) => setData('price_cents', e.target.value)}
-              className="w-full border rounded px-3 py-2"
+          <form onSubmit={submit} className="space-y-6 rounded-lg border border-stroke bg-surface p-5">
+            <ProductFormFields
+              data={data}
+              setData={setData}
+              errors={errors}
+              categories={categories}
+              preview={preview}
+              onImageChange={onImageChange}
+              onRemoveImage={removeImage}
             />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Stock</label>
-            <input
-              type="number"
-              value={data.stock}
-              onChange={(e) => setData('stock', e.target.value)}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-        </div>
 
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={data.is_active}
-            onChange={(e) => setData('is_active', e.target.checked)}
-          />
-          Active (visible in shop)
-        </label>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Image</label>
-          {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded border mb-2" />}
-          <input type="file" accept="image/*" onChange={onImageChange} className="w-full" />
-          {preview && !data.image && (
-            <button type="button" onClick={removeImage} className="text-red-600 text-sm mt-1">
-              Remove image
-            </button>
-          )}
-          {errors.image && <div className="text-red-600 text-sm mt-1">{errors.image}</div>}
+            <div className="flex gap-3">
+              <button
+                disabled={processing}
+                className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+              >
+                Save changes
+              </button>
+              <button
+                type="button"
+                onClick={destroy}
+                className="rounded-lg border border-red-600 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
+              >
+                Delete
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div className="flex gap-3">
-          <button disabled={processing} className="bg-black text-white px-4 py-2 rounded flex-1">
-            Save Changes
-          </button>
-          <button type="button" onClick={destroy} className="border border-red-600 text-red-600 px-4 py-2 rounded">
-            Delete
-          </button>
-        </div>
-      </form>
+      </div>
     </AuthenticatedLayout>
   );
 }
