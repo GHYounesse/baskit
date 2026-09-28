@@ -25,6 +25,16 @@ export default function Index({ products, categories, filters }) {
             <option key={c.id} value={c.slug}>{c.name}</option>
           ))}
         </select>
+        <select
+          defaultValue={filters.sort ?? 'newest'}
+          onChange={(e) => router.get('/', { ...filters, sort: e.target.value }, { preserveState: true })}
+          className="border rounded px-3 py-2"
+        >
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
+          <option value="name">Name: A to Z</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
