@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreProductRequest;
+use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -28,19 +29,9 @@ class ProductController extends Controller
         return Inertia::render('Admin/Products/Create', ['categories' => Category::all()]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $this->authorize('create', Product::class);
-
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price_cents' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'is_active' => 'boolean',
-            'image' => 'nullable|image|max:4096',
-        ]);
+        $data = $request->validated();
         $data['slug'] = Str::slug($data['name']).'-'.uniqid();
 
         if ($request->hasFile('image')) {
@@ -63,20 +54,9 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        $this->authorize('update', $product);
-
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price_cents' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'is_active' => 'boolean',
-            'image' => 'nullable|image|max:4096',
-            'remove_image' => 'boolean',
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
             $this->deleteStoredImage($product);
