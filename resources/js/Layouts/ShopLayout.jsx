@@ -54,7 +54,7 @@ export default function ShopLayout({ children }) {
                             </Link>
                         )}
                         {user?.is_admin && (
-                            <Link href="/admin/products" className="text-sm font-medium text-gray-700 hover:text-gray-900">
+                            <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-gray-900">
                                 Admin
                             </Link>
                         )}
