@@ -2,7 +2,7 @@ import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -50,6 +50,13 @@ export default function ForgotPassword({ status }) {
                     </PrimaryButton>
                 </div>
             </form>
+
+            <p className="mt-6 text-sm text-ink-muted">
+                Remembered your password?{' '}
+                <Link href={route('login')} className="font-medium text-primary hover:text-primary-hover">
+                    Log in
+                </Link>
+            </p>
         </GuestLayout>
     );
 }
