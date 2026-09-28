@@ -44,7 +44,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Dashboard
                             </NavLink> */}
                             {user.is_admin && (
-                                <NavLink href="/admin" active={route().current('admin.*')}>
+                                <NavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
                                     Dashboard
                                 </NavLink>
                             )}
@@ -124,7 +124,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             My Orders
                         </ResponsiveNavLink>
                         {user.is_admin && (
-                            <ResponsiveNavLink href="/admin" active={route().current('admin.*')}>
+                            <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
                                 Admin
                             </ResponsiveNavLink>
                         )}

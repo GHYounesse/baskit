@@ -49,7 +49,7 @@ export default function ShopLayout({ children }) {
                                 </NavLink>
                             )}
                             {user?.is_admin && (
-                                <NavLink href="/admin" active={route().current('admin.*')}>
+                                <NavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
                                     Admin
                                 </NavLink>
                             )}
@@ -134,7 +134,7 @@ export default function ShopLayout({ children }) {
                             </ResponsiveNavLink>
                         )}
                         {user?.is_admin && (
-                            <ResponsiveNavLink href="/admin" active={route().current('admin.*')}>
+                            <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.*')}>
                                 Admin
                             </ResponsiveNavLink>
                         )}
