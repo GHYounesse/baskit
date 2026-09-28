@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\InsufficientStockException;
+use App\Http\Requests\Checkout\CompleteCheckoutRequest;
 use App\Models\Cart;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -52,18 +53,9 @@ class CheckoutController extends Controller
         return response()->json(['clientSecret' => $intent->client_secret]);
     }
 
-    public function complete(Request $request, OrderService $orders)
+    public function complete(CompleteCheckoutRequest $request, OrderService $orders)
     {
-        $data = $request->validate([
-            'payment_intent_id' => 'required|string',
-            'shipping_address' => 'required|array',
-            'shipping_address.line1' => 'required|string|max:255',
-            'shipping_address.line2' => 'nullable|string|max:255',
-            'shipping_address.city' => 'required|string|max:255',
-            'shipping_address.state' => 'nullable|string|max:255',
-            'shipping_address.postal_code' => 'nullable|string|max:20',
-            'shipping_address.country' => 'required|string|size:2',
-        ]);
+        $data = $request->validated();
 
         // Never trust the client: fetch the intent from Stripe and verify it.
         $stripe = new StripeClient(config('services.stripe.secret'));
