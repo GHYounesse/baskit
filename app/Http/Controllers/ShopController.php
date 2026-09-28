@@ -26,6 +26,7 @@ class ShopController extends Controller
         [$column, $direction] = self::SORTS[$sort] ?? self::SORTS['newest'];
 
         $products = Product::query()
+            ->with('category')
             ->where('is_active', true)
             ->when($request->category, fn ($q, $slug) => $q->whereHas('category', fn ($q) => $q->where('slug', $slug)))
             ->when($request->search, fn ($q, $term) => $q->where('name', 'like', "%{$term}%"))
