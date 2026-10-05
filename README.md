@@ -5,12 +5,42 @@
 
 A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React**: product catalog, guest and user carts, Stripe checkout (test mode), order history, an admin panel, and a custom brand design system with dark mode.
 
-<!-- Add screenshots here, e.g. ![Shop](docs/screenshots/shop.png) -->
+<!-- LIVE DEMO: once deployed, uncomment and set the URL
+**[Live demo](https://your-demo-url.example)** · log in as `customer@example.com` / `password`, or `admin@example.com` / `password` for the admin panel. Stripe runs in test mode: use card `4242 4242 4242 4242`.
+-->
+
+<p align="center">
+  <img src="docs/screenshots/shop.png" alt="Baskit shop page" width="900">
+</p>
+
+## Table of contents
+
+- [Screenshots](#screenshots) · [Features](#features) · [How payments work](#how-payments-work) · [Tech stack](#tech-stack)
+- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [Roadmap](#roadmap)
+
+## Screenshots
+
+| Shop | Product page |
+| --- | --- |
+| ![Shop](docs/screenshots/shop.png) | ![Product](docs/screenshots/product.png) |
+
+| Cart | Checkout |
+| --- | --- |
+| ![Cart](docs/screenshots/cart.png) | ![Checkout](docs/screenshots/checkout.png) |
+
+| Admin dashboard | Admin orders |
+| --- | --- |
+| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Admin orders](docs/screenshots/admin-orders.png) |
+
+| Dark mode | Mobile |
+| --- | --- |
+| ![Dark mode](docs/screenshots/dark-mode.png) | ![Mobile](docs/screenshots/mobile.png) |
 
 ## Features
 
 **Shopping**
 - Browse products by category (as tappable chips), with search, sorting and pagination
+- Product detail page with a stock-aware quantity stepper, live line total and related products
 - Product images, with an admin upload flow and a stock-photo fallback for seeded demo data
 - Guest cart that is merged into the user's cart on login or registration
 - Stripe Elements card checkout, with a visible order summary and a Pay button that states the exact amount
@@ -40,6 +70,38 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Order access restricted to the owner or an admin (`OrderPolicy`)
 - Scheduled cleanup of abandoned guest carts
 - CI running Pint, tests and a frontend build
+
+## How payments work
+
+Orders can be created by two paths, the browser redirect and the Stripe webhook, and both end up in the same idempotent code path.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant A as Baskit (Laravel)
+    participant S as Stripe
+
+    B->>A: POST /checkout/payment-intent
+    A->>S: Create PaymentIntent (amount from server-side cart)
+    S-->>A: client_secret
+    A-->>B: client_secret
+    B->>S: Confirm card payment (Stripe Elements)
+    par Redirect path
+        B->>A: POST /checkout/complete
+        A->>S: Retrieve PaymentIntent, verify status
+    and Webhook path
+        S->>A: payment_intent.succeeded (signed)
+    end
+    A->>A: OrderService: transaction, lock stock, create order
+    Note over A: Unique index on payment_intent_id,<br/>so only one order is created
+    alt Stock ran out after payment
+        A->>S: Refund
+    else Stock OK
+        A-->>B: Order confirmation (email queued once)
+    end
+```
+
+Key guarantees: amounts are computed server-side, payments are verified against Stripe before an order exists, stock is locked inside a transaction, and a user who closes the tab after paying still gets their order via the webhook.
 
 ## Tech stack
 
@@ -195,7 +257,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guidelines.
 
 ## Roadmap
 
-- Dark mode / brand styling for the product detail page and the account profile pages, which still use the original Breeze styling
+- Dark mode / brand styling for the account profile pages, which still use the original Breeze styling
 - A full end-to-end test of the checkout payment flow (currently covered at the service/webhook level, not browser-driven)
 - User-facing search/sort on the admin order and product tables
 
