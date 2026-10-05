@@ -41,8 +41,22 @@ class ShopController extends Controller
         ]);
     }
 
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
-        return Inertia::render('Shop/Show', ['product' => $product->load('category')]);
+        abort_unless($product->is_active || $request->user()?->is_admin, 404);
+
+        $related = Product::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->where('category_id', $product->category_id)
+            ->whereKeyNot($product->id)
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return Inertia::render('Shop/Show', [
+            'product' => $product->load('category'),
+            'related' => $related,
+        ]);
     }
 }
