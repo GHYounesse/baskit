@@ -44,7 +44,7 @@ class ReviewSeeder extends Seeder
     ];
 
     /**
-     * Demo reviews on a spread of products. Each one is backed by a shipped
+     * Demo reviews on a spread of products. Each one is backed by a delivered
      * order, because only customers who bought a product can review it. That
      * means seeding also adds those orders to the admin dashboard totals.
      * Runs once: skipped if any review already exists.
@@ -68,13 +68,23 @@ class ReviewSeeder extends Seeder
             foreach ($reviewers as $user) {
                 $when = now()->subDays(random_int(1, 60))->subMinutes(random_int(0, 1440));
 
+                $shippedAt = $when->copy()->addDay();
+                $deliveredAt = $when->copy()->addDays(3);
+
                 $order = Order::create([
                     'user_id' => $user->id,
-                    'status' => 'shipped',
+                    'status' => 'delivered',
                     'total_cents' => $product->price_cents,
+                    'tracking_carrier' => 'UPS',
+                    'tracking_number' => '1Z'.strtoupper(fake()->bothify('??########')),
+                    'shipped_at' => $shippedAt,
+                    'delivered_at' => $deliveredAt,
                     'created_at' => $when,
-                    'updated_at' => $when,
+                    'updated_at' => $deliveredAt,
                 ]);
+                // (creating the order already recorded the "placed" event)
+                $order->events()->create(['type' => 'shipped', 'message' => 'Shipped with UPS.', 'created_at' => $shippedAt]);
+                $order->events()->create(['type' => 'delivered', 'message' => 'Order delivered.', 'created_at' => $deliveredAt]);
                 $order->items()->create([
                     'product_id' => $product->id,
                     'product_name' => $product->name,
