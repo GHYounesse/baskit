@@ -90,11 +90,18 @@ class CartService
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         foreach ($guest->items as $item) {
-            $existing = $cart->items()->where('product_id', $item->product_id)->first();
+            $existing = $cart->items()
+                ->where('product_id', $item->product_id)
+                ->where('product_variant_id', $item->product_variant_id)
+                ->first();
 
             $existing
                 ? $existing->increment('quantity', $item->quantity)
-                : $cart->items()->create(['product_id' => $item->product_id, 'quantity' => $item->quantity]);
+                : $cart->items()->create([
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'quantity' => $item->quantity,
+                ]);
         }
 
         if ($guest->coupon_id && ! $cart->coupon_id) {

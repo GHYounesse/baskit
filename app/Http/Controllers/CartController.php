@@ -23,7 +23,7 @@ class CartController extends Controller
         $cart = $this->currentCart($request);
 
         return Inertia::render('Cart/Index', [
-            'cart' => $cart->load('items.product'),
+            'cart' => $cart->load('items.product', 'items.variant'),
             'pricing' => $this->carts->pricing($cart, $request->user()),
         ]);
     }
@@ -34,11 +34,22 @@ class CartController extends Controller
 
         $cart = $this->currentCart($request);
 
-        $item = $cart->items()->where('product_id', $data['product_id'])->first();
+        // The same product in a different size or colour is a separate line.
+        $variantId = $data['variant_id'] ?? null;
+
+        $item = $cart->items()
+            ->where('product_id', $data['product_id'])
+            ->where('product_variant_id', $variantId)
+            ->first();
+
         if ($item) {
             $item->increment('quantity', $data['quantity']);
         } else {
-            $cart->items()->create($data);
+            $cart->items()->create([
+                'product_id' => $data['product_id'],
+                'product_variant_id' => $variantId,
+                'quantity' => $data['quantity'],
+            ]);
         }
 
         return back()->with('success', 'Added to cart.');
