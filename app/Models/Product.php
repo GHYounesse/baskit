@@ -66,6 +66,20 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * The product's variants (sizes, colours), in the order the admin set.
+     * A product with none is sold as a single item and holds its own stock.
+     */
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('position')->orderBy('id');
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->relationLoaded('variants') ? $this->variants->isNotEmpty() : $this->variants()->exists();
+    }
+
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
