@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\CartController;
@@ -61,6 +62,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
     Route::resource('products', AdminProductController::class)->except('show');
     Route::resource('coupons', AdminCouponController::class)->except('show');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
