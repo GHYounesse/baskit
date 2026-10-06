@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', AdminProductController::class)->except('show');
+    Route::resource('coupons', AdminCouponController::class)->except('show');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
 });
