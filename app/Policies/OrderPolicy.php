@@ -24,6 +24,23 @@ class OrderPolicy
     }
 
     /**
+     * Fulfilling and refunding orders is for admins only.
+     */
+    public function manage(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Customers can cancel their own orders (the lifecycle service decides
+     * whether it is still too late). Admins refund through the admin screens.
+     */
+    public function cancel(User $user, Order $order): bool
+    {
+        return $user->id === $order->user_id;
+    }
+
+    /**
      * Determine whether the user can create models.
      */
     public function create(User $user): bool

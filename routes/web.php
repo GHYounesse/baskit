@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -59,7 +60,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('products', AdminProductController::class)->except('show');
     Route::resource('coupons', AdminCouponController::class)->except('show');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+    Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::post('orders/{order}/ship', [AdminOrderController::class, 'ship'])->name('orders.ship');
+    Route::post('orders/{order}/deliver', [AdminOrderController::class, 'deliver'])->name('orders.deliver');
+    Route::post('orders/{order}/refund', [AdminOrderController::class, 'refund'])->name('orders.refund');
 });
 
 require __DIR__.'/auth.php'; // added by Breeze
