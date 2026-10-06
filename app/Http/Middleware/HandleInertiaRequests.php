@@ -39,6 +39,11 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
             ],
             'cartCount' => fn () => app(CartService::class)->count($request),
+            // IDs of the signed-in user's saved products, so any page can draw
+            // a filled or empty heart without its own query.
+            'wishlistIds' => fn () => $request->user()
+                ? $request->user()->wishlist()->pluck('products.id')->all()
+                : [],
         ];
     }
 }
