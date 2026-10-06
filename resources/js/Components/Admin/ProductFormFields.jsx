@@ -36,7 +36,7 @@ export function dollarsInputToCents(value) {
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 }
 
-export default function ProductFormFields({ data, setData, errors, categories, preview, onImageChange, onRemoveImage }) {
+export default function ProductFormFields({ data, setData, errors, categories, preview, onImageChange, onRemoveImage, originalStock }) {
   const [priceInput, setPriceInput] = useState(centsToDollarsInput(data.price_cents));
 
   const updatePrice = (value) => {
@@ -100,6 +100,19 @@ export default function ProductFormFields({ data, setData, errors, categories, p
           </Field>
         </div>
       </div>
+
+      {originalStock !== undefined && Number(data.stock) !== Number(originalStock) && (
+        <Field label="Reason for the stock change (optional)" error={errors.stock_note}>
+          <input
+            value={data.stock_note ?? ''}
+            onChange={(e) => setData('stock_note', e.target.value)}
+            maxLength={255}
+            placeholder="For example: recount after delivery"
+            className={inputClass}
+          />
+          <p className="mt-1 text-xs text-ink-muted">Saved in the inventory log with your name.</p>
+        </Field>
+      )}
 
       <label className="flex items-center gap-2 text-sm text-ink">
         <input
