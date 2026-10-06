@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
@@ -26,6 +27,8 @@ Route::get('/dashboard', function (Request $request) {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
+Route::post('/assistant/message', [AssistantController::class, 'message'])->middleware('throttle:assistant')->name('assistant.message');
+Route::post('/assistant/reset', [AssistantController::class, 'reset'])->middleware('throttle:assistant')->name('assistant.reset');
 Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1')->name('search.suggest');
 Route::get('/products/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
