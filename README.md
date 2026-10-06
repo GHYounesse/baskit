@@ -39,6 +39,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 ## Features
 
 **Shopping**
+- Shopping assistant: a chat bubble in the corner that answers from live store data, with no external AI service and nothing to pay for. Ask it to find products ("headphones under $150", "something for the kitchen", "best rated"), check stock and sizes ("is the cotton t-shirt available in medium?"), and follow up naturally ("what about in blue?", "the second one", "show more"). Signed-in customers can ask where an order is, see its tracking number and timeline, and find out whether it can still be cancelled. It also explains discount codes, payment, wishlists and reviews. It only ever reads data, shows only the signed-in customer's own orders, and says so when it doesn't know something
 - Browse products by category (as tappable chips), with search, sorting and pagination
 - Full-text search with live suggestions: as you type, the search box shows matching products (with a photo, category and price) and categories, with the matched part of each name in bold. Searches rank by relevance (a hit in the name beats one in the description), match the start of words ("wire head" finds "Wireless Headphones"), ignore case and accents, offer "Did you mean ...?" for misspellings, and remember your recent searches. The box works fully by keyboard and with screen readers
 - Product detail page with a stock-aware quantity stepper, live line total and related products
@@ -240,6 +241,18 @@ Use any future expiry, any CVC and any postal code.
 | `QUEUE_CONNECTION` | Queue driver (`database` by default) — order confirmation emails are queued jobs |
 | `MAIL_MAILER` | `log` by default (emails write to `storage/logs/laravel.log`); set a real driver to actually deliver them |
 
+## Shopping assistant
+
+The assistant is built in, rule-based and deterministic: the same message always gets the same answer, every rule is tested, and it never makes up a price, a stock level or a policy. A message goes through three steps in `App\Services\Assistant`:
+
+1. `IntentClassifier` decides what is being asked (searching, availability, order status, cancelling, store questions, small talk). `EntityExtractor` pulls out the details: a price limit, a size, a colour, a category, an order number, and the product being talked about. It reuses the search spell-correction, so "headphnes" still works.
+2. `ProductReplies` and `OrderReplies` answer from the real data (`AssistantCatalog`, the customer's own orders), and wording about how the store works lives in `config/assistant.php`, so it matches what the app actually does.
+3. A small `AssistantContext` in the visitor's server-side session remembers the last search and product, which is what makes "what about in blue?" or "the second one" work. It holds only references, not personal details, and "new chat" clears it.
+
+It is read-only (it can point to the page where an order is cancelled, but never cancels anything), only looks at the signed-in customer's own orders, answers the same way for an order that doesn't exist and one that belongs to someone else, and renders everything as plain text, so nothing typed into it can become markup. Messages are rate limited (`ASSISTANT_RATE_LIMIT`, 30 a minute by default). Set `ASSISTANT_ENABLED=false` to turn it off.
+
+Everything goes through the `ConversationEngine` interface. To add a language model later (for example a free hosted one such as Groq or Gemini, or a local one through Ollama), write an engine that implements it and calls `AssistantCatalog` and the order lookups as its tools, then bind it in `AppServiceProvider`. Nothing else has to change.
+
 ## Search
 
 Product search runs on SQLite's built-in full-text engine (FTS5), so it needs no extra service. A `product_search` index is created by a migration and kept in step automatically when products or categories change. Matches are ranked with BM25, weighting the name 10x, the category 4x and the description 1x.
@@ -271,7 +284,7 @@ Locally, `php artisan schedule:work` runs it.
 app/
   Http/Controllers/     Shop, cart, checkout, orders, Stripe webhook, admin
   Http/Requests/        Form requests for cart, checkout and admin product/order actions
-  Services/             CartService (guest/user carts), OrderService (order creation), Search/ (product search)
+  Services/             CartService (guest/user carts), OrderService (order creation), Search/ (product search), Assistant/ (shopping assistant)
   Listeners/            MergeGuestCart (runs on login)
   Mail/                 OrderConfirmation
   Policies/             OrderPolicy, ProductPolicy
