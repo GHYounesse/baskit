@@ -23,6 +23,8 @@ Route::get('/products/{product:slug}', [ShopController::class, 'show'])->name('s
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->middleware('throttle:10,1')->name('cart.coupon.apply');
+Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 

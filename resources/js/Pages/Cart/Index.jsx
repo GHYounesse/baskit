@@ -1,6 +1,6 @@
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 
 function BasketIcon(props) {
   return (
@@ -81,6 +81,71 @@ function CartRow({ item }) {
   );
 }
 
+function CouponBox({ coupon, error: couponError }) {
+  const { data, setData, post, processing, errors, reset } = useForm({ code: '' });
+
+  const apply = (e) => {
+    e.preventDefault();
+    if (!data.code.trim()) return;
+    post('/cart/coupon', { preserveScroll: true, onSuccess: () => reset() });
+  };
+
+  if (coupon) {
+    return (
+      <div className="mt-4 border-t border-stroke pt-4">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-primary-light px-3 py-2">
+          <div className="min-w-0 text-sm">
+            <span className="font-semibold text-brand">{coupon.code}</span>
+            <span className="text-ink-muted"> · {coupon.label}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.delete('/cart/coupon', { preserveScroll: true })}
+            className="-my-2 -mr-2 shrink-0 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Remove
+          </button>
+        </div>
+        {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={apply} className="mt-4 border-t border-stroke pt-4">
+      <label htmlFor="coupon-code" className="text-sm font-medium text-ink">
+        Discount code
+      </label>
+      <div className="mt-1.5 flex gap-2">
+        <input
+          id="coupon-code"
+          value={data.code}
+          onChange={(e) => setData('code', e.target.value)}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck="false"
+          aria-invalid={Boolean(errors.code)}
+          aria-describedby={errors.code ? 'coupon-error' : undefined}
+          className="min-w-0 flex-1 rounded-lg border-stroke bg-surface px-3 py-2.5 text-base uppercase text-ink placeholder:normal-case placeholder:text-ink-muted focus:border-primary focus:ring-primary sm:py-2 sm:text-sm"
+          placeholder="Enter code"
+        />
+        <button
+          type="submit"
+          disabled={processing || !data.code.trim()}
+          className="shrink-0 rounded-lg border border-stroke bg-surface px-4 text-sm font-semibold text-ink transition hover:bg-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+        >
+          Apply
+        </button>
+      </div>
+      {errors.code && (
+        <p id="coupon-error" className="mt-2 text-sm text-red-600">
+          {errors.code}
+        </p>
+      )}
+    </form>
+  );
+}
+
 function EmptyCart() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-stroke py-20 text-center">
@@ -93,9 +158,8 @@ function EmptyCart() {
   );
 }
 
-export default function Index({ cart }) {
+export default function Index({ cart, pricing }) {
   const { auth } = usePage().props;
-  const total = cart.items.reduce((sum, i) => sum + i.quantity * i.product.price_cents, 0);
 
   return (
     <div className="bg-canvas text-ink">
@@ -120,12 +184,19 @@ export default function Index({ cart }) {
               <div className="font-medium text-ink">Order summary</div>
               <div className="mt-3 flex items-center justify-between text-sm text-ink-muted">
                 <span>Subtotal</span>
-                <span>{formatMoney(total)}</span>
+                <span>{formatMoney(pricing.subtotal_cents)}</span>
               </div>
+              {pricing.discount_cents > 0 && (
+                <div className="mt-2 flex items-center justify-between text-sm text-primary">
+                  <span>Discount ({pricing.coupon.code})</span>
+                  <span>−{formatMoney(pricing.discount_cents)}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-center justify-between border-t border-stroke pt-2 font-semibold text-ink">
                 <span>Total</span>
-                <span>{formatMoney(total)}</span>
+                <span>{formatMoney(pricing.total_cents)}</span>
               </div>
+              <CouponBox coupon={pricing.coupon} error={pricing.coupon_error} />
               <Link
                 href="/checkout"
                 className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-white transition hover:bg-primary-hover"

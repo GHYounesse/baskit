@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CouponException;
 use App\Http\Requests\Cart\AddCartItemRequest;
+use App\Http\Requests\Cart\ApplyCouponRequest;
 use App\Http\Requests\Cart\UpdateCartItemQuantityRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class CartController extends Controller
@@ -20,6 +24,7 @@ class CartController extends Controller
 
         return Inertia::render('Cart/Index', [
             'cart' => $cart->load('items.product'),
+            'pricing' => $this->carts->pricing($cart, $request->user()),
         ]);
     }
 
@@ -37,6 +42,39 @@ class CartController extends Controller
         }
 
         return back()->with('success', 'Added to cart.');
+    }
+
+    public function applyCoupon(ApplyCouponRequest $request)
+    {
+        $cart = $this->currentCart($request);
+        $pricing = $this->carts->pricing($cart->setRelation('coupon', null));
+
+        $coupon = Coupon::findByCode($request->validated('code'));
+
+        if (! $coupon) {
+            throw ValidationException::withMessages(['code' => "That code isn't valid."]);
+        }
+
+        if ($pricing['subtotal_cents'] === 0) {
+            throw ValidationException::withMessages(['code' => 'Add something to your cart first.']);
+        }
+
+        try {
+            $coupon->validateFor($pricing['subtotal_cents'], $request->user());
+        } catch (CouponException $e) {
+            throw ValidationException::withMessages(['code' => $e->getMessage()]);
+        }
+
+        $cart->update(['coupon_id' => $coupon->id]);
+
+        return back()->with('success', "Code {$coupon->code} applied.");
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        $this->currentCart($request)->update(['coupon_id' => null]);
+
+        return back();
     }
 
     public function update(UpdateCartItemQuantityRequest $request, CartItem $cartItem)
