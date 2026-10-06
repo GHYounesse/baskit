@@ -1,20 +1,9 @@
-import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import Pagination from '@/Components/Pagination';
 import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
-
-const STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
-
-// Mirrors OrderStatusBadge's colors, but as a <select> background/text so
-// the control itself reads as the status, not a plain uncolored dropdown.
-const STATUS_SELECT_STYLES = {
-  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-  paid: 'bg-primary-light text-primary',
-  shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
-};
 
 function BasketIcon(props) {
   return (
@@ -34,34 +23,6 @@ function EmptyOrders() {
   );
 }
 
-function StatusSelect({ order }) {
-  const [saving, setSaving] = useState(false);
-
-  const update = (status) => {
-    setSaving(true);
-    router.patch(`/admin/orders/${order.id}`, { status }, {
-      preserveScroll: true,
-      onFinish: () => setSaving(false),
-    });
-  };
-
-  return (
-    <select
-      value={order.status}
-      disabled={saving}
-      aria-label={`Status for order #${order.id}`}
-      onChange={(e) => update(e.target.value)}
-      className={`h-10 rounded-full border-0 py-0 pl-4 pr-9 text-sm font-medium capitalize focus:ring-2 focus:ring-primary disabled:cursor-wait disabled:opacity-60 sm:h-9 ${STATUS_SELECT_STYLES[order.status]}`}
-    >
-      {STATUSES.map((s) => (
-        <option key={s} value={s} className="bg-surface capitalize text-ink">
-          {s}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 export default function Index({ orders }) {
   return (
     <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Manage orders</h2>}>
@@ -73,7 +34,7 @@ export default function Index({ orders }) {
             <EmptyOrders />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-stroke bg-surface">
-              <table className="w-full min-w-[560px] text-sm">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b border-stroke text-left text-ink-muted">
                     <th className="p-3 font-medium">Order</th>
@@ -81,20 +42,29 @@ export default function Index({ orders }) {
                     <th className="p-3 font-medium text-right">Total</th>
                     <th className="p-3 font-medium">Status</th>
                     <th className="p-3 font-medium">Placed</th>
+                    <th className="p-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.data.map((order) => (
                     <tr key={order.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
-                      <td className="p-3 text-ink">#{order.id}</td>
+                      <td className="p-3 font-medium text-ink">#{order.id}</td>
                       <td className="p-3 text-ink-muted">
                         {order.user.name} <span className="text-ink-muted/70">({order.user.email})</span>
                       </td>
                       <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
                       <td className="p-3">
-                        <StatusSelect order={order} />
+                        <OrderStatusBadge status={order.status} />
                       </td>
                       <td className="p-3 text-ink-muted">{formatDate(order.created_at)}</td>
+                      <td className="p-3 text-right">
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="-my-2 rounded px-2 py-2.5 text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          Manage
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
