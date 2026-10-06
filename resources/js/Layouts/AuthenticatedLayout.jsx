@@ -20,9 +20,22 @@ function CartLink({ count, ...props }) {
     );
 }
 
+function WishlistLink({ count, ...props }) {
+    return (
+        <NavLink href="/wishlist" {...props}>
+            Wishlist
+            {count > 0 && (
+                <span className="ms-1.5 rounded-full bg-primary-light px-1.5 py-0.5 text-xs font-semibold text-primary">
+                    {count}
+                </span>
+            )}
+        </NavLink>
+    );
+}
+
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    const { cartCount } = usePage().props;
+    const { cartCount, wishlistIds } = usePage().props;
     const [showingNav, setShowingNav] = useState(false);
 
     return (
@@ -54,6 +67,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Shop
                             </NavLink>
                             <CartLink count={cartCount} active={route().current('cart.index')} />
+                            <WishlistLink count={wishlistIds.length} active={route().current('wishlist.index')} />
                             <NavLink href="/orders" active={route().current('orders.*')}>
                                 My Orders
                             </NavLink>
@@ -133,6 +147,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href="/cart" active={route().current('cart.index')}>
                             Cart {cartCount > 0 && `(${cartCount})`}
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href="/wishlist" active={route().current('wishlist.index')}>
+                            Wishlist {wishlistIds.length > 0 && `(${wishlistIds.length})`}
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href="/orders" active={route().current('orders.*')}>
                             My Orders

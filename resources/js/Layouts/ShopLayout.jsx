@@ -20,8 +20,21 @@ function CartLink({ count, ...props }) {
     );
 }
 
+function WishlistLink({ count, ...props }) {
+    return (
+        <NavLink href="/wishlist" {...props}>
+            Wishlist
+            {count > 0 && (
+                <span className="ms-1.5 rounded-full bg-primary-light px-1.5 py-0.5 text-xs font-semibold text-primary">
+                    {count}
+                </span>
+            )}
+        </NavLink>
+    );
+}
+
 export default function ShopLayout({ children }) {
-    const { auth, cartCount } = usePage().props;
+    const { auth, cartCount, wishlistIds } = usePage().props;
     const user = auth.user;
     const [showingNav, setShowingNav] = useState(false);
 
@@ -38,6 +51,9 @@ export default function ShopLayout({ children }) {
                                 Shop
                             </NavLink>
                             <CartLink count={cartCount} active={route().current('cart.index')} />
+                            {user && (
+                                <WishlistLink count={wishlistIds.length} active={route().current('wishlist.index')} />
+                            )}
                             {user && (
                                 <NavLink href="/orders" active={route().current('orders.*')}>
                                     My Orders
@@ -123,6 +139,11 @@ export default function ShopLayout({ children }) {
                         <ResponsiveNavLink href="/cart" active={route().current('cart.index')}>
                             Cart {cartCount > 0 && `(${cartCount})`}
                         </ResponsiveNavLink>
+                        {user && (
+                            <ResponsiveNavLink href="/wishlist" active={route().current('wishlist.index')}>
+                                Wishlist {wishlistIds.length > 0 && `(${wishlistIds.length})`}
+                            </ResponsiveNavLink>
+                        )}
                         {user && (
                             <ResponsiveNavLink href="/orders" active={route().current('orders.*')}>
                                 My Orders
