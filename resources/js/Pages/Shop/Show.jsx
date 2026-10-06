@@ -1,3 +1,7 @@
+import ProductCard from '@/Components/ProductCard';
+import ProductReviews from '@/Components/ProductReviews';
+import { StarRating } from '@/Components/StarRating';
+import WishlistButton from '@/Components/WishlistButton';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -100,34 +104,7 @@ function QuantityStepper({ value, max, onChange, disabled }) {
   );
 }
 
-function RelatedCard({ product }) {
-  const outOfStock = product.stock <= 0;
-
-  return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group rounded-lg border border-stroke bg-surface p-3 transition hover:border-primary hover:shadow-sm"
-    >
-      <div className="relative mb-3 aspect-square overflow-hidden rounded-lg bg-canvas">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className={`h-full w-full object-cover transition group-hover:scale-[1.03] ${outOfStock ? 'opacity-50' : ''}`}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
-            <BasketIcon className="h-10 w-10" />
-          </div>
-        )}
-      </div>
-      <div className="truncate font-medium text-ink">{product.name}</div>
-      <div className="mt-0.5 font-semibold text-ink">{formatMoney(product.price_cents)}</div>
-    </Link>
-  );
-}
-
-export default function Show({ product, related = [] }) {
+export default function Show({ product, related = [], ratings, reviews, myReview, canReview }) {
   const outOfStock = product.stock <= 0;
 
   const { data, setData, post, processing } = useForm({
@@ -188,6 +165,18 @@ export default function Show({ product, related = [] }) {
               {product.name}
             </h1>
 
+            {ratings.count > 0 && (
+              <a
+                href="#reviews"
+                className="mt-2 inline-flex items-center gap-2 rounded text-sm text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <StarRating value={ratings.average} />
+                <span>
+                  {ratings.average.toFixed(1)} · {ratings.count} {ratings.count === 1 ? 'review' : 'reviews'}
+                </span>
+              </a>
+            )}
+
             <div className="mt-3 flex items-baseline gap-4">
               <span className="font-display text-3xl font-bold text-ink">
                 {formatMoney(product.price_cents)}
@@ -202,12 +191,12 @@ export default function Show({ product, related = [] }) {
               {outOfStock ? (
                 <>
                   <p className="font-medium text-ink">This one is out of stock right now.</p>
-                  <Link
-                    href="/"
-                    className="mt-3 inline-block text-sm font-medium text-primary hover:text-primary-hover"
-                  >
-                    Keep shopping
-                  </Link>
+                  <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <WishlistButton product={product} variant="full" />
+                    <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
+                      Keep shopping
+                    </Link>
+                  </div>
                 </>
               ) : (
                 <>
@@ -221,14 +210,17 @@ export default function Show({ product, related = [] }) {
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={processing}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
-                  >
-                    <BasketIcon className="h-5 w-5" />
-                    {processing ? 'Adding...' : `Add to cart · ${formatMoney(lineTotal)}`}
-                  </button>
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={processing}
+                      className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+                    >
+                      <BasketIcon className="h-5 w-5" />
+                      {processing ? 'Adding...' : `Add to cart · ${formatMoney(lineTotal)}`}
+                    </button>
+                    <WishlistButton product={product} variant="square" />
+                  </div>
 
                   <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-muted">
                     <LockIcon className="h-3.5 w-3.5" />
@@ -249,6 +241,14 @@ export default function Show({ product, related = [] }) {
           </div>
         </div>
 
+        <ProductReviews
+          product={product}
+          ratings={ratings}
+          reviews={reviews}
+          myReview={myReview}
+          canReview={canReview}
+        />
+
         {related.length > 0 && (
           <section className="mt-16" aria-labelledby="related-heading">
             <h2 id="related-heading" className="font-display text-xl font-bold text-ink">
@@ -256,7 +256,7 @@ export default function Show({ product, related = [] }) {
             </h2>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
               {related.map((p) => (
-                <RelatedCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} showCategory={false} />
               ))}
             </div>
           </section>
