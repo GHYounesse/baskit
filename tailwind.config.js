@@ -27,6 +27,7 @@ export default {
                     DEFAULT: 'var(--baskit-brand-dark)',
                 },
                 panel: 'var(--baskit-panel)',
+                series: 'var(--chart-series)',
                 surface: 'var(--baskit-surface)',
                 canvas: 'var(--baskit-background)',
                 stroke: 'var(--baskit-border)',

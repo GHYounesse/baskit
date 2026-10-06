@@ -26,3 +26,21 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
 export function formatDateTime(value) {
   return dateTimeFormatter.format(new Date(value));
 }
+
+const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const dayYearFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'UTC' });
+
+/**
+ * For calendar dates sent as "YYYY-MM-DD". They are read as UTC and shown as
+ * UTC, so the day never slips by one for viewers in other time zones.
+ */
+export function formatDay(value, { year = false } = {}) {
+  const date = new Date(`${value}T00:00:00Z`);
+
+  return (year ? dayYearFormatter : dayFormatter).format(date);
+}
+
+export function formatWeekday(value) {
+  return weekdayFormatter.format(new Date(`${value}T00:00:00Z`));
+}

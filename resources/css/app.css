@@ -20,9 +20,17 @@
 
   --baskit-text: #17201D;
   --baskit-text-muted: #66736E;
+
+  /* The one data-series color for charts. The dark theme's brighter brand
+     green fails the dark chart band (too light, it glares), so charts use
+     the base brand green in both themes; checked with the dataviz validator
+     against each surface (#FFFFFF light, #0D211C dark). */
+  --chart-series: #00A86B;
 }
 
 .dark {
+  --chart-series: #00A86B;
+
   --baskit-primary: #12C982;
   --baskit-primary-hover: #20D991;
   --baskit-primary-light: #123D30;
