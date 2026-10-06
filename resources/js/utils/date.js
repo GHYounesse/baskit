@@ -11,3 +11,18 @@ const formatter = new Intl.DateTimeFormat('en-US', {
 export function formatDate(value) {
   return formatter.format(new Date(value));
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+/**
+ * Like formatDate, with the time: "Oct 5, 2026, 3:42 PM".
+ */
+export function formatDateTime(value) {
+  return dateTimeFormatter.format(new Date(value));
+}

@@ -11,6 +11,8 @@ export default function ConfirmDialog({
     title,
     children,
     confirmLabel = 'Delete',
+    cancelLabel = 'Cancel',
+    processingLabel = 'Deleting…',
     processing = false,
     onConfirm,
     onCancel,
@@ -23,10 +25,10 @@ export default function ConfirmDialog({
 
                 <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     <SecondaryButton onClick={onCancel} disabled={processing}>
-                        Cancel
+                        {cancelLabel}
                     </SecondaryButton>
                     <DangerButton onClick={onConfirm} disabled={processing}>
-                        {processing ? 'Deleting…' : confirmLabel}
+                        {processing ? processingLabel : confirmLabel}
                     </DangerButton>
                 </div>
             </div>
