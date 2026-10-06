@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Search\ProductSearch;
+use App\Services\Search\StoreSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +18,21 @@ class Product extends Model
     ];
 
     protected $appends = ['image_url'];
+
+    protected static function booted(): void
+    {
+        // Name, description or category changed (a stock change goes through
+        // increment/decrement, which does not fire `saved`, so it never reindexes).
+        static::saved(function (Product $product) {
+            app(ProductSearch::class)->index($product);
+            StoreSearch::forgetVocabulary();
+        });
+
+        static::deleted(function (Product $product) {
+            app(ProductSearch::class)->remove($product->id);
+            StoreSearch::forgetVocabulary();
+        });
+    }
 
     public function category()
     {

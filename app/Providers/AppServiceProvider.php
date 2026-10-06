@@ -4,8 +4,13 @@ namespace App\Providers;
 
 use App\Services\Payments\PaymentRefunder;
 use App\Services\Payments\StripeRefunder;
+use App\Services\Search\FtsProductSearch;
+use App\Services\Search\LikeProductSearch;
+use App\Services\Search\ProductSearch;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Stripe\StripeClient;
@@ -17,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Use the full-text index when this database has one (SQLite, via the
+        // product_search migration); otherwise search the products table directly.
+        $this->app->singleton(ProductSearch::class, fn () => DB::getDriverName() === 'sqlite' && Schema::hasTable('product_search')
+            ? new FtsProductSearch
+            : new LikeProductSearch);
+
         $this->app->bind(PaymentRefunder::class, fn () => new StripeRefunder(
             new StripeClient(config('services.stripe.secret')),
         ));
