@@ -26,13 +26,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const [showingNav, setShowingNav] = useState(false);
 
     return (
-        // The nav/header below are fully dark-mode aware. The content area
-        // intentionally stays on a fixed light background: pages rendered inside
-        // <main> (admin tables, profile, dashboard stat cards) still use
-        // hardcoded white cards and unset text colors, so letting this
-        // background go dark would make that text illegible until those pages
-        // get their own token pass.
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-canvas text-ink">
             <nav className="border-b border-stroke bg-surface">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-1">
@@ -90,7 +84,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ThemeToggle />
                         <button
                             onClick={() => setShowingNav((prev) => !prev)}
-                            className="inline-flex items-center justify-center rounded-lg p-2 text-ink-muted transition hover:bg-primary-light hover:text-ink"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-muted transition hover:bg-primary-light hover:text-ink"
                             aria-label="Toggle navigation menu"
                         >
                             <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">

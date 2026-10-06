@@ -24,7 +24,7 @@ export default function FlashBanner() {
     return (
         <div
             role="status"
-            className={`mx-auto mt-4 max-w-6xl rounded-lg px-4 py-3 text-sm ${
+            className={`mx-4 mt-4 rounded-lg px-4 py-3 text-sm lg:mx-auto lg:max-w-6xl ${
                 flash?.success
                     ? 'bg-primary-light text-primary'
                     : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'

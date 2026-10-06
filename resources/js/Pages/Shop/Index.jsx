@@ -28,7 +28,7 @@ function CategoryChips({ categories, active, onSelect }) {
       key={value}
       type="button"
       onClick={() => onSelect(value)}
-      className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+      className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
         active === value
           ? 'bg-primary text-white'
           : 'bg-surface text-ink-muted ring-1 ring-inset ring-stroke hover:text-ink'
