@@ -9,11 +9,13 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StripeWebhookController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+// Kept for the Breeze auth flows that redirect to the `dashboard` route; customers
+// have no dashboard of their own, so send everyone to where they actually belong.
+Route::get('/dashboard', function (Request $request) {
+    return redirect()->route($request->user()->is_admin ? 'admin.dashboard' : 'shop.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
