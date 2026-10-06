@@ -29,16 +29,16 @@ function isAddressComplete(address) {
 
 function Field({ label, error, children }) {
   return (
-    <div>
-      <label className="mb-1 block text-sm font-medium text-ink">{label}</label>
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
       {children}
-      {error && <div className="mt-1 text-sm text-red-600">{error}</div>}
-    </div>
+      {error && <span className="mt-1 block text-sm text-red-600">{error}</span>}
+    </label>
   );
 }
 
 const inputClass =
-  'w-full rounded-lg border-stroke bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-primary';
+  'w-full rounded-lg border-stroke bg-surface px-3 py-2.5 text-base text-ink sm:py-2 sm:text-sm placeholder:text-ink-muted focus:border-primary focus:ring-primary';
 
 function ShippingAddressForm({ address, setAddress, errors }) {
   const update = (field) => (e) => setAddress((prev) => ({ ...prev, [field]: e.target.value }));
@@ -48,35 +48,35 @@ function ShippingAddressForm({ address, setAddress, errors }) {
       <h2 className="font-medium text-ink">Shipping address</h2>
 
       <Field label="Address line 1" error={errors['shipping_address.line1']}>
-        <input value={address.line1} onChange={update('line1')} className={inputClass} required />
+        <input value={address.line1} onChange={update('line1')} className={inputClass} autoComplete="address-line1" required />
       </Field>
 
       <Field label="Address line 2 (optional)">
-        <input value={address.line2} onChange={update('line2')} className={inputClass} />
+        <input value={address.line2} onChange={update('line2')} className={inputClass} autoComplete="address-line2" />
       </Field>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
           <Field label="City" error={errors['shipping_address.city']}>
-            <input value={address.city} onChange={update('city')} className={inputClass} required />
+            <input value={address.city} onChange={update('city')} className={inputClass} autoComplete="address-level2" required />
           </Field>
         </div>
-        <div className="flex-1">
+        <div>
           <Field label="State / Province (optional)">
-            <input value={address.state} onChange={update('state')} className={inputClass} />
+            <input value={address.state} onChange={update('state')} className={inputClass} autoComplete="address-level1" />
           </Field>
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
           <Field label="Postal code (optional)">
-            <input value={address.postal_code} onChange={update('postal_code')} className={inputClass} />
+            <input value={address.postal_code} onChange={update('postal_code')} className={inputClass} autoComplete="postal-code" />
           </Field>
         </div>
-        <div className="flex-1">
+        <div>
           <Field label="Country" error={errors['shipping_address.country']}>
-            <select value={address.country} onChange={update('country')} className={inputClass} required>
+            <select value={address.country} onChange={update('country')} className={inputClass} autoComplete="country" required>
               <option value="">Select a country</option>
               {COUNTRIES.map((c) => (
                 <option key={c.code} value={c.code}>{c.name}</option>
@@ -151,10 +151,15 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
       {cardError && <p className="text-sm text-red-600">{cardError}</p>}
       <button
         disabled={!stripe || processing || !addressComplete}
-        className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+        className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
       >
         {processing ? 'Processing…' : `Pay ${formatMoney(total)}`}
       </button>
+      {!addressComplete && (
+        <p className="text-center text-xs text-ink-muted">
+          Fill in your shipping address above to enable payment.
+        </p>
+      )}
     </form>
   );
 }
@@ -199,7 +204,7 @@ export default function Index({ cart, stripeKey, errors }) {
             )}
           </div>
 
-          <div className="h-fit rounded-lg border border-stroke bg-surface p-4">
+          <div className="order-first h-fit rounded-lg border border-stroke bg-surface p-4 lg:order-none">
             <div className="font-medium text-ink">Order summary</div>
             <div className="mt-3 space-y-2">
               {cart.items.map((item) => (
