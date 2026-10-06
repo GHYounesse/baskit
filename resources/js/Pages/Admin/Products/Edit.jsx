@@ -2,6 +2,7 @@ import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ProductFormFields from '@/Components/Admin/ProductFormFields';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 
 export default function Edit({ product, categories }) {
   const { data, setData, put, processing, errors } = useForm({
@@ -32,10 +33,17 @@ export default function Edit({ product, categories }) {
     setPreview(null);
   };
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const destroy = () => {
-    if (confirm('Delete this product?')) {
-      router.delete(`/admin/products/${product.id}`);
-    }
+    setDeleting(true);
+    router.delete(`/admin/products/${product.id}`, {
+      onFinish: () => {
+        setDeleting(false);
+        setConfirmingDelete(false);
+      },
+    });
   };
 
   return (
@@ -64,7 +72,7 @@ export default function Edit({ product, categories }) {
               </button>
               <button
                 type="button"
-                onClick={destroy}
+                onClick={() => setConfirmingDelete(true)}
                 className="rounded-lg border border-red-600 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
               >
                 Delete
@@ -73,6 +81,18 @@ export default function Edit({ product, categories }) {
           </form>
         </div>
       </div>
+
+      <ConfirmDialog
+        show={confirmingDelete}
+        title="Delete this product?"
+        confirmLabel="Delete product"
+        processing={deleting}
+        onConfirm={destroy}
+        onCancel={() => setConfirmingDelete(false)}
+      >
+        <strong className="font-medium text-ink">{product.name}</strong> will be removed from the shop.
+        This can't be undone.
+      </ConfirmDialog>
     </AuthenticatedLayout>
   );
 }

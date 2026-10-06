@@ -1,5 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import Pagination from '@/Components/Pagination';
 import { formatMoney } from '@/utils/money';
 
@@ -41,10 +43,18 @@ function EmptyProducts() {
 }
 
 export default function Index({ products }) {
-  const destroy = (id) => {
-    if (confirm('Delete this product?')) {
-      router.delete(`/admin/products/${id}`);
-    }
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const confirmDelete = () => {
+    setDeleting(true);
+    router.delete(`/admin/products/${pendingDelete.id}`, {
+      preserveScroll: true,
+      onFinish: () => {
+        setDeleting(false);
+        setPendingDelete(null);
+      },
+    });
   };
 
   return (
@@ -107,10 +117,10 @@ export default function Index({ products }) {
                       </td>
                       <td className="p-3 text-right">
                         <div className="flex justify-end gap-3">
-                          <Link href={`/admin/products/${product.id}/edit`} className="text-primary hover:text-primary-hover">
+                          <Link href={`/admin/products/${product.id}/edit`} className="-my-2 rounded px-2 py-2.5 text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             Edit
                           </Link>
-                          <button onClick={() => destroy(product.id)} className="text-red-600 hover:text-red-700">
+                          <button onClick={() => setPendingDelete(product)} className="-my-2 rounded px-2 py-2.5 text-red-600 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             Delete
                           </button>
                         </div>
@@ -125,6 +135,18 @@ export default function Index({ products }) {
           <Pagination links={products.links} />
         </div>
       </div>
+
+      <ConfirmDialog
+        show={pendingDelete !== null}
+        title="Delete this product?"
+        confirmLabel="Delete product"
+        processing={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      >
+        <strong className="font-medium text-ink">{pendingDelete?.name}</strong> will be removed from the shop.
+        This can't be undone.
+      </ConfirmDialog>
     </AuthenticatedLayout>
   );
 }

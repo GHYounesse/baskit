@@ -1,6 +1,8 @@
 import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 
 const STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
@@ -29,6 +31,34 @@ function EmptyOrders() {
       <BasketIcon className="h-8 w-8 text-ink-muted/50" />
       <div className="font-medium text-ink">No orders yet</div>
     </div>
+  );
+}
+
+function StatusSelect({ order }) {
+  const [saving, setSaving] = useState(false);
+
+  const update = (status) => {
+    setSaving(true);
+    router.patch(`/admin/orders/${order.id}`, { status }, {
+      preserveScroll: true,
+      onFinish: () => setSaving(false),
+    });
+  };
+
+  return (
+    <select
+      value={order.status}
+      disabled={saving}
+      aria-label={`Status for order #${order.id}`}
+      onChange={(e) => update(e.target.value)}
+      className={`h-10 rounded-full border-0 py-0 pl-4 pr-9 text-sm font-medium capitalize focus:ring-2 focus:ring-primary disabled:cursor-wait disabled:opacity-60 sm:h-9 ${STATUS_SELECT_STYLES[order.status]}`}
+    >
+      {STATUSES.map((s) => (
+        <option key={s} value={s} className="bg-surface capitalize text-ink">
+          {s}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -62,17 +92,9 @@ export default function Index({ orders }) {
                       </td>
                       <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
                       <td className="p-3">
-                        <select
-                          value={order.status}
-                          onChange={(e) => router.patch(`/admin/orders/${order.id}`, { status: e.target.value }, { preserveScroll: true })}
-                          className={`rounded-full border-0 py-1 pl-2.5 pr-7 text-xs font-medium capitalize focus:ring-2 focus:ring-primary ${STATUS_SELECT_STYLES[order.status]}`}
-                        >
-                          {STATUSES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
+                        <StatusSelect order={order} />
                       </td>
-                      <td className="p-3 text-ink-muted">{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td className="p-3 text-ink-muted">{formatDate(order.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
