@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Services\InventoryService;
 use App\Services\Search\ProductSearch;
 use App\Services\Search\StoreSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -19,8 +21,33 @@ class Product extends Model
 
     protected $appends = ['image_url'];
 
+    /**
+     * Optional explanation for a stock change made through a plain save();
+     * recorded with the ledger entry. Not a database column.
+     */
+    public ?string $stockNote = null;
+
     protected static function booted(): void
     {
+        // Safety net: stock should change through InventoryService, which logs
+        // it. A change made some other way (a seeder, tinker, a bare update())
+        // is still recorded rather than slipping past the audit.
+        static::created(fn (Product $product) => app(InventoryService::class)->recordInitial($product, Auth::id()));
+
+        static::updated(function (Product $product) {
+            if ($product->wasChanged('stock')) {
+                StockMovement::create([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'reason' => StockMovement::ADJUSTMENT,
+                    'quantity_change' => $product->stock - (int) $product->getOriginal('stock'),
+                    'stock_after' => $product->stock,
+                    'user_id' => Auth::id(),
+                    'note' => $product->stockNote,
+                ]);
+            }
+        });
+
         // Name, description or category changed (a stock change goes through
         // increment/decrement, which does not fire `saved`, so it never reindexes).
         static::saved(function (Product $product) {
@@ -37,6 +64,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
     }
 
     public function reviews()
