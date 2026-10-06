@@ -9,7 +9,7 @@ We've received your order **#{{ $order->id }}** and it's being prepared.
 | Product | Qty | Price |
 | :------ | :-: | ----: |
 @foreach ($order->items as $item)
-| {{ $item->product_name }} | {{ $item->quantity }} | ${{ number_format($item->unit_price_cents * $item->quantity / 100, 2) }} |
+| {{ $item->display_name }} | {{ $item->quantity }} | ${{ number_format($item->unit_price_cents * $item->quantity / 100, 2) }} |
 @endforeach
 @endcomponent
 

@@ -18,7 +18,7 @@ Order **#{{ $order->id }}** has shipped.
 | Product | Qty |
 | :------ | :-: |
 @foreach ($order->items as $item)
-| {{ $item->product_name }} | {{ $item->quantity }} |
+| {{ $item->display_name }} | {{ $item->quantity }} |
 @endforeach
 @endcomponent
 

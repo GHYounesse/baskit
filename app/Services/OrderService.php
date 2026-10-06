@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -47,12 +48,25 @@ class OrderService
                 ->get()
                 ->keyBy('id');
 
+            // Variants are locked too (after their products, the order every stock change uses).
+            $variants = ProductVariant::whereIn('id', $cart->items->pluck('product_variant_id')->filter())
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
             $subtotal = 0;
             foreach ($cart->items as $item) {
                 $product = $products[$item->product_id];
+                $variant = $item->product_variant_id ? ($variants[$item->product_variant_id] ?? null) : null;
 
-                if ($product->stock < $item->quantity) {
+                if ($item->product_variant_id && ! $variant) {
                     throw new InsufficientStockException($product->name);
+                }
+
+                $available = $variant ? $variant->stock : $product->stock;
+
+                if ($available < $item->quantity) {
+                    throw new InsufficientStockException($variant ? "{$product->name} ({$variant->label})" : $product->name);
                 }
 
                 $subtotal += $item->quantity * $product->price_cents;
@@ -94,13 +108,18 @@ class OrderService
             foreach ($cart->items as $item) {
                 $product = $products[$item->product_id];
 
+                $variant = $item->product_variant_id ? $variants[$item->product_variant_id] : null;
+
                 $order->items()->create([
                     'product_id' => $product->id,
+                    'product_variant_id' => $variant?->id,
                     'product_name' => $product->name,
+                    'variant_label' => $variant?->label,
+                    'sku' => $variant?->sku,
                     'unit_price_cents' => $product->price_cents,
                     'quantity' => $item->quantity,
                 ]);
-                $this->inventory->adjust($product, -$item->quantity, StockMovement::SALE, $order, $userId);
+                $this->inventory->adjust($product, -$item->quantity, StockMovement::SALE, $order, $userId, null, $variant);
             }
 
             $coupon?->increment('used_count');

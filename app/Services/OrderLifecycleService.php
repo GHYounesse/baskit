@@ -185,7 +185,12 @@ class OrderLifecycleService
     private function restock(Order $order, ?User $actor): void
     {
         foreach ($order->items()->whereNotNull('product_id')->get() as $item) {
-            $this->inventory->adjust($item->product_id, $item->quantity, StockMovement::RETURN, $order, $actor);
+            // A line for a variant that has since been deleted has nowhere to go back to.
+            if ($item->variant_label !== null && $item->product_variant_id === null) {
+                continue;
+            }
+
+            $this->inventory->adjust($item->product_id, $item->quantity, StockMovement::RETURN, $order, $actor, null, $item->product_variant_id);
         }
     }
 

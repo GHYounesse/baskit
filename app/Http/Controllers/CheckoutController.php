@@ -19,7 +19,7 @@ class CheckoutController extends Controller
 
     public function index(Request $request)
     {
-        $cart = Cart::with('items.product')->firstOrCreate(['user_id' => $request->user()->id]);
+        $cart = Cart::with('items.product', 'items.variant')->firstOrCreate(['user_id' => $request->user()->id]);
 
         if ($cart->items->isEmpty()) {
             return redirect()->route('cart.index');
@@ -34,15 +34,19 @@ class CheckoutController extends Controller
 
     public function createPaymentIntent(Request $request)
     {
-        $cart = Cart::with('items.product')->where('user_id', $request->user()->id)->firstOrFail();
+        $cart = Cart::with('items.product', 'items.variant')->where('user_id', $request->user()->id)->firstOrFail();
 
         if ($cart->items->isEmpty()) {
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
         foreach ($cart->items as $item) {
-            if ($item->product->stock < $item->quantity) {
-                return response()->json(['message' => "Not enough stock for {$item->product->name}."], 422);
+            $available = $item->variant ? $item->variant->stock : $item->product->stock;
+
+            if ($available < $item->quantity) {
+                $name = $item->variant ? "{$item->product->name} ({$item->variant->label})" : $item->product->name;
+
+                return response()->json(['message' => "Not enough stock for {$name}."], 422);
             }
         }
 
