@@ -7,7 +7,7 @@ use App\Mail\OrderRefunded;
 use App\Mail\OrderShipped;
 use App\Models\Coupon;
 use App\Models\Order;
-use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\User;
 use App\Services\Payments\PaymentRefunder;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Mail;
  */
 class OrderLifecycleService
 {
-    public function __construct(private PaymentRefunder $refunder) {}
+    public function __construct(private PaymentRefunder $refunder, private InventoryService $inventory) {}
 
     public function ship(Order $order, ?string $carrier, ?string $trackingNumber, ?User $actor = null): Order
     {
@@ -116,7 +116,7 @@ class OrderLifecycleService
             ]);
 
             if ($restock) {
-                $this->restock($order);
+                $this->restock($order, $actor);
             }
 
             $this->releaseCoupon($order);
@@ -182,10 +182,10 @@ class OrderLifecycleService
         return Order::with('user')->lockForUpdate()->findOrFail($order->id);
     }
 
-    private function restock(Order $order): void
+    private function restock(Order $order, ?User $actor): void
     {
         foreach ($order->items()->whereNotNull('product_id')->get() as $item) {
-            Product::whereKey($item->product_id)->increment('stock', $item->quantity);
+            $this->inventory->adjust($item->product_id, $item->quantity, StockMovement::RETURN, $order, $actor);
         }
     }
 

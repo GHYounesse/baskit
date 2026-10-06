@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
@@ -16,6 +17,8 @@ use Stripe\PaymentIntent;
 
 class OrderService
 {
+    public function __construct(private InventoryService $inventory) {}
+
     /**
      * Turn a succeeded PaymentIntent into an order. Idempotent: calling it
      * again for the same intent returns the existing order.
@@ -97,7 +100,7 @@ class OrderService
                     'unit_price_cents' => $product->price_cents,
                     'quantity' => $item->quantity,
                 ]);
-                $product->decrement('stock', $item->quantity);
+                $this->inventory->adjust($product, -$item->quantity, StockMovement::SALE, $order, $userId);
             }
 
             $coupon?->increment('used_count');
