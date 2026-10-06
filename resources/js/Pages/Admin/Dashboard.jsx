@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
+import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 
 function StatCard({ label, value }) {
@@ -62,7 +63,7 @@ export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
                           )}
                         </td>
                         <td className="p-3 text-right">
-                          <Link href={`/admin/products/${product.id}/edit`} className="text-primary hover:text-primary-hover">
+                          <Link href={`/admin/products/${product.id}/edit`} className="-my-2 rounded px-2 py-2.5 text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             Edit
                           </Link>
                         </td>
@@ -96,7 +97,7 @@ export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
                         <td className="p-3 text-ink-muted">{order.user?.name ?? '—'}</td>
                         <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
                         <td className="p-3"><OrderStatusBadge status={order.status} /></td>
-                        <td className="p-3 text-ink-muted">{new Date(order.created_at).toLocaleDateString()}</td>
+                        <td className="p-3 text-ink-muted">{formatDate(order.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>

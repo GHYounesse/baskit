@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
+import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 import { Head } from '@inertiajs/react';
 
@@ -19,7 +20,7 @@ export default function Show({ order }) {
               <div className="text-right">
                 <div className="text-sm text-ink-muted">Placed on</div>
                 <div className="mt-1 font-medium text-ink">
-                  {new Date(order.created_at).toLocaleDateString()}
+                  {formatDate(order.created_at)}
                 </div>
               </div>
             </div>

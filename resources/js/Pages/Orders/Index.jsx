@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
+import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 
 function BasketIcon(props) {
@@ -39,12 +40,12 @@ export default function Index({ orders }) {
                 <Link
                   key={order.id}
                   href={`/orders/${order.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stroke bg-surface p-4 transition hover:border-primary"
+                  className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-stroke bg-surface p-4 transition hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <div>
                     <div className="font-medium text-ink">Order #{order.id}</div>
                     <div className="text-sm text-ink-muted">
-                      {new Date(order.created_at).toLocaleDateString()} · {order.items.length} item(s)
+                      {formatDate(order.created_at)} · {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

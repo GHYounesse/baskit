@@ -24,7 +24,7 @@ function QuantityStepper({ item }) {
         onClick={() => setQuantity(item.quantity - 1)}
         disabled={item.quantity <= 1}
         aria-label="Decrease quantity"
-        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted transition hover:bg-primary-light hover:text-primary disabled:opacity-30"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-ink-muted transition hover:bg-primary-light hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-30 sm:h-8 sm:w-8"
       >
         −
       </button>
@@ -33,7 +33,7 @@ function QuantityStepper({ item }) {
         type="button"
         onClick={() => setQuantity(item.quantity + 1)}
         aria-label="Increase quantity"
-        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted transition hover:bg-primary-light hover:text-primary"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-ink-muted transition hover:bg-primary-light hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"
       >
         +
       </button>
@@ -60,7 +60,7 @@ function CartRow({ item }) {
       </Link>
 
       <div className="min-w-0 flex-1">
-        <Link href={`/products/${item.product.slug}`} className="truncate font-medium text-ink hover:text-primary">
+        <Link href={`/products/${item.product.slug}`} className="block truncate font-medium text-ink hover:text-primary">
           {item.product.name}
         </Link>
         <div className="text-sm text-ink-muted">{formatMoney(item.product.price_cents)} each</div>
@@ -69,14 +69,14 @@ function CartRow({ item }) {
           <button
             type="button"
             onClick={() => router.delete(`/cart/${item.id}`, { preserveScroll: true })}
-            className="text-sm text-ink-muted transition hover:text-red-600"
+            className="-mx-2 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Remove
           </button>
         </div>
       </div>
 
-      <div className="font-semibold text-ink">{formatMoney(lineTotal)}</div>
+      <div className="shrink-0 font-semibold text-ink">{formatMoney(lineTotal)}</div>
     </div>
   );
 }
@@ -128,7 +128,7 @@ export default function Index({ cart }) {
               </div>
               <Link
                 href="/checkout"
-                className="mt-4 block rounded-lg bg-primary py-2.5 text-center text-sm font-semibold text-white transition hover:bg-primary-hover"
+                className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-white transition hover:bg-primary-hover"
               >
                 {auth.user ? 'Checkout' : 'Log in to checkout'}
               </Link>
