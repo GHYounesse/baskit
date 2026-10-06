@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
+import AssistantWidget from '@/Components/Assistant/AssistantWidget';
 import FlashBanner from '@/Components/FlashBanner';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -176,6 +177,7 @@ export default function ShopLayout({ children }) {
 
             <FlashBanner />
             <main>{children}</main>
+            <AssistantWidget />
         </div>
     );
 }
