@@ -20,7 +20,7 @@ class ProductController extends Controller
         $this->authorize('viewAny', Product::class);
 
         return Inertia::render('Admin/Products/Index', [
-            'products' => Product::with('category')->latest()->paginate(15),
+            'products' => Product::with('category')->withCount('variants')->latest()->paginate(15),
         ]);
     }
 
@@ -53,6 +53,7 @@ class ProductController extends Controller
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
             'categories' => Category::all(),
+            'variants' => $product->variants,
             'movements' => $product->stockMovements()->with('user:id,name')->latest('id')->limit(8)->get(),
         ]);
     }
@@ -78,7 +79,11 @@ class ProductController extends Controller
 
         DB::transaction(function () use ($product, $data, $inventory, $newStock, $request, $stockNote) {
             $product->update($data);
-            $inventory->setStock($product, $newStock, $request->user(), $stockNote);
+
+            // With variants, stock belongs to them and is edited there.
+            if (! $product->hasVariants()) {
+                $inventory->setStock($product, $newStock, $request->user(), $stockNote);
+            }
         });
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');

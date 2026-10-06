@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
@@ -64,6 +65,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
     Route::resource('products', AdminProductController::class)->except('show');
+    Route::post('products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('products.variants.store');
+    Route::put('variants/{variant}', [AdminProductVariantController::class, 'update'])->name('variants.update');
+    Route::delete('variants/{variant}', [AdminProductVariantController::class, 'destroy'])->name('variants.destroy');
     Route::resource('coupons', AdminCouponController::class)->except('show');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
