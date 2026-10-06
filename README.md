@@ -63,6 +63,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 **Admin**
 - Dashboard with revenue, order and product counts, and a low-stock list
 - Product management (create, edit, delete, activate, image upload), with dollar-based price input
+- Analytics: revenue, orders, average order and refunds for the last 7, 30 or 90 days, each compared with the period before. Charts for revenue by day (against the previous period), orders by weekday, top products and sales by category, drawn as plain SVG with no charting library. Every chart has hover and keyboard readouts and a table view, follows dark mode, and holds its previous picture while new data loads. Cancelled and refunded orders are left out of sales
 - Order management: each order has a detail page with ship (carrier and tracking number), mark delivered, and a full refund with an optional reason and restock. Status changes are validated (you can't ship a refunded order), logged to the order timeline, and emailed to the customer. Refunded and cancelled orders don't count as revenue
 - Coupon management: percentage or fixed discounts, minimum order, usage limit, expiry, and an on/off switch. Each customer can use a code once, and a discount never takes an order below $0.50 (Stripe's minimum charge)
 - Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
