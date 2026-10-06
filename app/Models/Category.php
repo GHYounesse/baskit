@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\Search\ProductSearch;
 use App\Services\Search\StoreSearch;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Category extends Model
 {
@@ -21,9 +22,13 @@ class Category extends Model
             }
 
             StoreSearch::forgetVocabulary();
+            Cache::forget('assistant.categories');
         });
 
-        static::deleted(fn () => StoreSearch::forgetVocabulary());
+        static::deleted(function () {
+            StoreSearch::forgetVocabulary();
+            Cache::forget('assistant.categories');
+        });
     }
 
     public function products()

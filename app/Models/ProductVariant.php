@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * One purchasable version of a product: a size, a colour or both, with its
@@ -14,6 +15,13 @@ class ProductVariant extends Model
     use HasFactory;
 
     protected $fillable = ['product_id', 'sku', 'size', 'color', 'stock', 'position'];
+
+    protected static function booted(): void
+    {
+        // The shopping assistant recognises the colours variants come in; keep that list current.
+        static::saved(fn () => Cache::forget('assistant.colors'));
+        static::deleted(fn () => Cache::forget('assistant.colors'));
+    }
 
     protected $casts = ['stock' => 'integer', 'position' => 'integer'];
 
