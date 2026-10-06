@@ -61,6 +61,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
                                         Analytics
                                     </NavLink>
+                                    <NavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
+                                        Inventory
+                                    </NavLink>
                                     <NavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
                                         Coupons
                                     </NavLink>
@@ -142,6 +145,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
                                     Analytics
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
+                                    Inventory
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
                                     Coupons
