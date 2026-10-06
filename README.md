@@ -45,6 +45,8 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Guest cart that is merged into the user's cart on login or registration
 - Stripe Elements card checkout, with a visible order summary and a Pay button that states the exact amount
 - Discount codes at the cart (percentage or fixed amount), with clear errors for expired, used-up or ineligible codes; the discount shows through checkout, the order page and the confirmation email
+- Product reviews: a 1-5 star rating with an optional comment, limited to customers who bought the product (cancelled orders don't count), one review each, editable and deletable by the author. Pages show the average, a rating breakdown and short author names ("Jane D."); admins can remove any review. The shop shows ratings on every card and can sort by top rated
+- Wishlist: a heart on every product card and product page saves items to the account; a Wishlist page lists them newest first with a quick "Add to cart"
 - Order history and order detail pages
 - Role-based redirect after login/registration: admins land on the admin dashboard, everyone else lands on the shop
 
@@ -195,6 +197,10 @@ Seeding creates these accounts (password: `password`):
 | Customer | `customer@example.com` |
 
 It also creates 10 random customers, useful for the admin order views. Accounts you register through the UI are regular customers, and land on the shop after signing in; the two accounts above land on `/` and `/admin` respectively.
+
+### Demo reviews
+
+Seeding also adds about 80 reviews across 30 products, each backed by a shipped order so it follows the same rule as real reviews. That means seeding adds those orders to the admin dashboard totals. Reseed with `php artisan migrate:fresh --seed` to start clean.
 
 ### Demo coupons
 
