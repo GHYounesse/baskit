@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
+use App\Services\Search\StoreSearch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -22,9 +23,14 @@ class ShopController extends Controller
         'rating' => ['reviews_avg_rating', 'desc'],
     ];
 
-    public function index(Request $request)
+    public function index(Request $request, StoreSearch $search)
     {
-        $sort = $request->input('sort');
+        $term = trim((string) $request->input('search'));
+        $ids = $term !== '' ? $search->ids($term) : null;
+
+        // Searching sorts by best match unless a sort was chosen.
+        $sort = $request->input('sort') ?: ($ids !== null ? 'relevance' : null);
+        $byRelevance = $sort === 'relevance' && $ids !== null;
         [$column, $direction] = self::SORTS[$sort] ?? self::SORTS['newest'];
 
         $products = Product::query()
@@ -33,8 +39,13 @@ class ShopController extends Controller
             ->withCount('reviews')
             ->where('is_active', true)
             ->when($request->category, fn ($q, $slug) => $q->whereHas('category', fn ($q) => $q->where('slug', $slug)))
-            ->when($request->search, fn ($q, $term) => $q->where('name', 'like', "%{$term}%"))
-            ->orderBy($column, $direction)
+            // Words must match in the name, category or description; best match first.
+            ->when($ids !== null, fn ($q) => $q->whereIn('products.id', $ids ?: [0]))
+            ->when(
+                $byRelevance && $ids !== [],
+                fn ($q) => $q->orderByRaw('CASE products.id '.implode(' ', array_map(fn ($id, $i) => "WHEN {$id} THEN {$i}", $ids, array_keys($ids))).' END'),
+                fn ($q) => $q->orderBy($column, $direction),
+            )
             // Among equal averages, the one backed by more reviews ranks higher.
             ->when($sort === 'rating', fn ($q) => $q->orderByDesc('reviews_count'))
             ->paginate(12)
@@ -43,7 +54,12 @@ class ShopController extends Controller
         return Inertia::render('Shop/Index', [
             'products' => $products,
             'categories' => Category::all(),
-            'filters' => $request->only(['category', 'search', 'sort']),
+            'filters' => [
+                ...$request->only(['category', 'search']),
+                'sort' => $sort,
+            ],
+            // Offered when a search finds nothing: "Did you mean ...?"
+            'correction' => $ids === [] ? $search->correction($term) : null,
         ]);
     }
 
