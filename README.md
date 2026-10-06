@@ -44,6 +44,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Product images, with an admin upload flow and a stock-photo fallback for seeded demo data
 - Guest cart that is merged into the user's cart on login or registration
 - Stripe Elements card checkout, with a visible order summary and a Pay button that states the exact amount
+- Discount codes at the cart (percentage or fixed amount), with clear errors for expired, used-up or ineligible codes; the discount shows through checkout, the order page and the confirmation email
 - Order history and order detail pages
 - Role-based redirect after login/registration: admins land on the admin dashboard, everyone else lands on the shop
 
@@ -52,12 +53,14 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Stripe webhook (`payment_intent.succeeded`) creates the order if the user never returns to the site
 - Idempotent order creation: one order per PaymentIntent, enforced by a unique index
 - Stock is checked and locked inside a database transaction; the payment is refunded if stock runs out after paying
+- Coupons are priced server-side and carried in the PaymentIntent metadata, so the webhook path applies the same discount. Usage limits are re-checked under a row lock when the order is created, and the payment is refunded if the last redemption was taken in the meantime
 - Order confirmation email, queued, sent once per order regardless of which flow (redirect or webhook) creates it
 
 **Admin**
 - Dashboard with revenue, order and product counts, and a low-stock list
 - Product management (create, edit, delete, activate, image upload), with dollar-based price input
 - Order list with inline, color-coded status updates
+- Coupon management: percentage or fixed discounts, minimum order, usage limit, expiry, and an on/off switch. Each customer can use a code once, and a discount never takes an order below $0.50 (Stripe's minimum charge)
 - Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
 
 **Design system**
@@ -192,6 +195,17 @@ Seeding creates these accounts (password: `password`):
 | Customer | `customer@example.com` |
 
 It also creates 10 random customers, useful for the admin order views. Accounts you register through the UI are regular customers, and land on the shop after signing in; the two accounts above land on `/` and `/admin` respectively.
+
+### Demo coupons
+
+Seeding also creates a few discount codes to try in the cart:
+
+| Code | Offer |
+| --- | --- |
+| `WELCOME10` | 10% off, once per customer |
+| `SAVE5` | $5 off orders of $30 or more |
+| `FLASH25` | 25% off, first 50 redemptions only |
+| `SUMMER20` | Expired, to see the error message |
 
 ### Test cards
 
