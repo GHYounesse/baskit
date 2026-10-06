@@ -82,7 +82,7 @@ class ShopController extends Controller
         $myReview = $user ? $product->reviews()->with('user')->where('user_id', $user->id)->first() : null;
 
         return Inertia::render('Shop/Show', [
-            'product' => $product->load('category'),
+            'product' => $product->load('category', 'variants'),
             'related' => $related,
             'ratings' => $product->ratingSummary(),
             'reviews' => $product->reviews()

@@ -14,7 +14,7 @@ class WishlistController extends Controller
             'products' => $request->user()->wishlist()
                 ->with('category')
                 ->withAvg('reviews', 'rating')
-                ->withCount('reviews')
+                ->withCount('reviews', 'variants')
                 ->where('is_active', true)
                 ->orderByPivot('created_at', 'desc')
                 ->get(),
