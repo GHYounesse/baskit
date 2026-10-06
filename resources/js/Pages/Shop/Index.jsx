@@ -1,17 +1,8 @@
 import Pagination from '@/Components/Pagination';
 import ProductCard from '@/Components/ProductCard';
+import SearchBox from '@/Components/SearchBox';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
-
-function SearchIcon(props) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" {...props}>
-      <circle cx="9" cy="9" r="6" />
-      <path d="M17 17l-4-4" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function BasketIcon(props) {
   return (
@@ -46,11 +37,26 @@ function CategoryChips({ categories, active, onSelect }) {
   );
 }
 
-function EmptyState({ hasFilters }) {
+function EmptyState({ hasFilters, search, correction, onSearch }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-stroke py-20 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-stroke px-6 py-20 text-center">
       <BasketIcon className="h-8 w-8 text-ink-muted/50" />
-      <div className="font-medium text-ink">No products match your search</div>
+      <div className="font-medium text-ink">
+        {search ? `No products match “${search}”` : 'No products match your filters'}
+      </div>
+      {correction && (
+        <p className="text-sm text-ink-muted">
+          Did you mean{' '}
+          <button
+            type="button"
+            onClick={() => onSearch(correction)}
+            className="rounded font-medium text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {correction}
+          </button>
+          ?
+        </p>
+      )}
       {hasFilters && (
         <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
           Clear filters
@@ -60,13 +66,15 @@ function EmptyState({ hasFilters }) {
   );
 }
 
-export default function Index({ products, categories, filters }) {
-  const [search, setSearch] = useState(filters.search ?? '');
+export default function Index({ products, categories, filters, correction }) {
   const hasFilters = Boolean(filters.search || filters.category);
 
   const updateQuery = (changes) => {
     router.get('/', { ...filters, ...changes }, { preserveState: true, preserveScroll: true });
   };
+
+  // A new search starts over on "best match" (an old sort choice shouldn't stick).
+  const search = (term) => updateQuery({ search: term || undefined, sort: undefined });
 
   return (
     // Full-bleed canvas/ink scoped to this page only: ShopLayout's <main> is
@@ -82,23 +90,17 @@ export default function Index({ products, categories, filters }) {
         <p className="mt-1 text-sm text-ink-muted">Everything for today's basket.</p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products..."
-              className="w-full rounded-lg border-stroke bg-surface py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-primary"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') updateQuery({ search });
-              }}
-            />
-          </div>
+          <SearchBox
+            initialValue={filters.search ?? ''}
+            onSearch={search}
+            onPickCategory={(slug) => router.get('/', { category: slug })}
+          />
           <select
             value={filters.sort ?? 'newest'}
             onChange={(e) => updateQuery({ sort: e.target.value })}
             className="rounded-lg border-stroke bg-surface py-2 text-sm text-ink focus:border-primary focus:ring-primary sm:w-48"
           >
+            {filters.search && <option value="relevance">Best match</option>}
             <option value="newest">Newest</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
@@ -117,7 +119,7 @@ export default function Index({ products, categories, filters }) {
 
         {products.data.length === 0 ? (
           <div className="mt-10">
-            <EmptyState hasFilters={hasFilters} />
+            <EmptyState hasFilters={hasFilters} search={filters.search} correction={correction} onSearch={search} />
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
