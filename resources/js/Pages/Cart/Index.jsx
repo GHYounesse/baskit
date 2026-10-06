@@ -63,6 +63,7 @@ function CartRow({ item }) {
         <Link href={`/products/${item.product.slug}`} className="block truncate font-medium text-ink hover:text-primary">
           {item.product.name}
         </Link>
+        {item.variant && <div className="text-sm text-ink">{item.variant.label}</div>}
         <div className="text-sm text-ink-muted">{formatMoney(item.product.price_cents)} each</div>
         <div className="mt-2 flex items-center gap-3">
           <QuantityStepper item={item} />

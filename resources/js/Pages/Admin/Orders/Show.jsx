@@ -230,7 +230,8 @@ export default function Show({ order, timeline, actions }) {
                   {order.items.map((item) => (
                     <div key={item.id} className="flex justify-between gap-3 py-2 first:pt-0">
                       <span className="text-ink">
-                        {item.product_name} <span className="text-ink-muted">× {item.quantity}</span>
+                        {item.display_name} <span className="text-ink-muted">× {item.quantity}</span>
+                        {item.sku && <span className="block text-xs text-ink-muted">SKU {item.sku}</span>}
                       </span>
                       <span className="shrink-0 text-ink">{formatMoney(item.unit_price_cents * item.quantity)}</span>
                     </div>

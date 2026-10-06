@@ -48,7 +48,7 @@ export default function Show({ order, timeline, canCancel }) {
               {order.items.map((item) => (
                 <div key={item.id} className="flex justify-between gap-3 text-sm">
                   <span className="text-ink-muted">
-                    {item.product_name} <span className="text-ink-muted/70">× {item.quantity}</span>
+                    {item.display_name} <span className="text-ink-muted/70">× {item.quantity}</span>
                   </span>
                   <span className="shrink-0 text-ink">
                     {formatMoney(item.unit_price_cents * item.quantity)}

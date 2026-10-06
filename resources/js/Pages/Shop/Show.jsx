@@ -3,8 +3,10 @@ import ProductReviews from '@/Components/ProductReviews';
 import { StarRating } from '@/Components/StarRating';
 import WishlistButton from '@/Components/WishlistButton';
 import ShopLayout from '@/Layouts/ShopLayout';
+import VariantPicker, { missingChoice, resolveVariant } from '@/Components/VariantPicker';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -107,10 +109,35 @@ function QuantityStepper({ value, max, onChange, disabled }) {
 export default function Show({ product, related = [], ratings, reviews, myReview, canReview }) {
   const outOfStock = product.stock <= 0;
 
-  const { data, setData, post, processing } = useForm({
+  // Sizes and colours: nothing can be added until each option is chosen.
+  const variants = product.variants ?? [];
+  const hasVariants = variants.length > 0;
+  const [selection, setSelection] = useState(() => {
+    // One variant: nothing to choose.
+    const only = variants.length === 1 && variants[0].stock > 0 ? variants[0] : null;
+
+    return { size: only?.size || null, color: only?.color || null };
+  });
+  const selected = hasVariants ? resolveVariant(variants, selection) : null;
+  const missing = hasVariants && !selected ? missingChoice(variants, selection) : null;
+  const available = hasVariants ? selected?.stock ?? 0 : product.stock;
+
+  const { data, setData, post, processing, errors } = useForm({
     product_id: product.id,
+    variant_id: selected?.id ?? null,
     quantity: 1,
   });
+
+  const choose = (next) => {
+    const variant = resolveVariant(variants, next);
+
+    setSelection(next);
+    setData((prev) => ({
+      ...prev,
+      variant_id: variant?.id ?? null,
+      quantity: variant ? Math.max(1, Math.min(prev.quantity, variant.stock)) : prev.quantity,
+    }));
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -181,8 +208,13 @@ export default function Show({ product, related = [], ratings, reviews, myReview
               <span className="font-display text-3xl font-bold text-ink">
                 {formatMoney(product.price_cents)}
               </span>
-              <StockStatus stock={product.stock} />
+              {hasVariants && !selected && !outOfStock ? (
+                <span className="text-sm text-ink-muted">Choose options to see availability</span>
+              ) : (
+                <StockStatus stock={hasVariants ? available : product.stock} />
+              )}
             </div>
+            {selected && <p className="mt-1 text-xs text-ink-muted">SKU {selected.sku}</p>}
 
             <form
               onSubmit={submit}
@@ -200,24 +232,30 @@ export default function Show({ product, related = [], ratings, reviews, myReview
                 </>
               ) : (
                 <>
+                  {hasVariants && (
+                    <div className="mb-5 border-b border-stroke pb-5">
+                      <VariantPicker variants={variants} selection={selection} onChange={choose} error={errors.variant_id} />
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-sm font-medium text-ink-muted">Quantity</span>
                     <QuantityStepper
                       value={data.quantity}
-                      max={product.stock}
+                      max={Math.max(available, 1)}
                       onChange={(q) => setData('quantity', q)}
-                      disabled={processing}
+                      disabled={processing || Boolean(missing)}
                     />
                   </div>
 
                   <div className="mt-4 flex gap-3">
                     <button
                       type="submit"
-                      disabled={processing}
+                      disabled={processing || Boolean(missing)}
                       className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
                     >
                       <BasketIcon className="h-5 w-5" />
-                      {processing ? 'Adding...' : `Add to cart · ${formatMoney(lineTotal)}`}
+                      {missing ?? (processing ? 'Adding...' : `Add to cart · ${formatMoney(lineTotal)}`)}
                     </button>
                     <WishlistButton product={product} variant="square" />
                   </div>

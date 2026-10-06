@@ -209,7 +209,9 @@ export default function Index({ cart, pricing, stripeKey, errors }) {
               {cart.items.map((item) => (
                 <div key={item.id} className="flex justify-between gap-3 text-sm">
                   <span className="text-ink-muted">
-                    {item.product.name} <span className="text-ink-muted/70">× {item.quantity}</span>
+                    {item.product.name}
+                    {item.variant && <span className="text-ink-muted/70"> ({item.variant.label})</span>}{' '}
+                    <span className="text-ink-muted/70">× {item.quantity}</span>
                   </span>
                   <span className="shrink-0 text-ink">{formatMoney(item.quantity * item.product.price_cents)}</span>
                 </div>

@@ -34,6 +34,18 @@ function AddToCart({ product }) {
     return <div className="rounded-lg bg-canvas py-2.5 text-center text-sm text-ink-muted">Out of stock</div>;
   }
 
+  // Sizes and colours have to be chosen on the product page.
+  if (product.variants_count > 0) {
+    return (
+      <Link
+        href={`/products/${product.slug}`}
+        className="block w-full rounded-lg border border-primary py-2.5 text-center text-sm font-semibold text-primary transition hover:bg-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        Choose options
+      </Link>
+    );
+  }
+
   return (
     <button
       type="button"
