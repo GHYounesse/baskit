@@ -65,6 +65,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Dashboard with revenue, order and product counts, and a low-stock list
 - Product management (create, edit, delete, activate, image upload), with dollar-based price input
 - Analytics: revenue, orders, average order and refunds for the last 7, 30 or 90 days, each compared with the period before. Charts for revenue by day (against the previous period), orders by weekday, top products and sales by category, drawn as plain SVG with no charting library. Every chart has hover and keyboard readouts and a table view, follows dark mode, and holds its previous picture while new data loads. Cancelled and refunded orders are left out of sales
+- Inventory log: every change to a product's stock is recorded in an append-only ledger with the amount, the balance after, why (sold, returned, manual adjustment, product created), the order and the person involved, and an optional note. It shows on its own page (filter by product, reason or name) and on each product's edit page. Stock can't go below zero, and an admin's edit is applied to the stock on hand at that moment, so an order placed while a form is open is never overwritten. An integrity check flags any product whose stock no longer matches its history
 - Order management: each order has a detail page with ship (carrier and tracking number), mark delivered, and a full refund with an optional reason and restock. Status changes are validated (you can't ship a refunded order), logged to the order timeline, and emailed to the customer. Refunded and cancelled orders don't count as revenue
 - Coupon management: percentage or fixed discounts, minimum order, usage limit, expiry, and an on/off switch. Each customer can use a code once, and a discount never takes an order below $0.50 (Stripe's minimum charge)
 - Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
@@ -245,6 +246,12 @@ Product search runs on SQLite's built-in full-text engine (FTS5), so it needs no
 - On other databases (MySQL, Postgres) the app falls back to a portable `LIKE` search with the same rules, chosen automatically. There is nothing to index.
 - Both engines implement `App\Services\Search\ProductSearch`. To use Meilisearch, Typesense or Laravel Scout instead, write one more class with its four methods and bind it in `AppServiceProvider`.
 - The suggestions endpoint is `GET /search/suggest?q=...` (rate limited, JSON). Queries are reduced to plain words before they reach the engine, so search syntax and SQL can't be injected through the box.
+
+## Inventory integrity
+
+Each product's stock history starts from zero, so its changes must always add up to the stock on hand. `php artisan inventory:verify` checks that (and that every entry's running balance follows from the one before it), prints any mismatch and exits non-zero, so it works in CI or a cron job. The admin Inventory page shows the same check as a banner, and the scheduler runs it daily and logs an error on failure.
+
+Stock is changed through `App\Services\InventoryService`, which locks the product, refuses to go below zero and writes the ledger entry in the same transaction. A change made some other way (a seeder, tinker, a plain `update()`) is still recorded as a manual adjustment by a safety net on the `Product` model; only raw SQL bypasses the log, and the integrity check catches that.
 
 ## Scheduled tasks
 
