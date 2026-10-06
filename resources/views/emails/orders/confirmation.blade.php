@@ -13,6 +13,11 @@ We've received your order **#{{ $order->id }}** and it's being prepared.
 @endforeach
 @endcomponent
 
+@if ($order->discount_cents > 0)
+Subtotal: ${{ number_format($order->subtotal_cents / 100, 2) }}<br>
+Discount ({{ $order->coupon_code }}): -${{ number_format($order->discount_cents / 100, 2) }}
+
+@endif
 **Total: ${{ number_format($order->total_cents / 100, 2) }}**
 
 @if ($order->shipping_address)

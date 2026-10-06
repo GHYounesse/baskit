@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\CouponException;
 use App\Exceptions\InsufficientStockException;
 use App\Mail\OrderConfirmation;
 use App\Models\Cart;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +44,7 @@ class OrderService
                 ->get()
                 ->keyBy('id');
 
-            $total = 0;
+            $subtotal = 0;
             foreach ($cart->items as $item) {
                 $product = $products[$item->product_id];
 
@@ -50,8 +52,26 @@ class OrderService
                     throw new InsufficientStockException($product->name);
                 }
 
-                $total += $item->quantity * $product->price_cents;
+                $subtotal += $item->quantity * $product->price_cents;
             }
+
+            // The coupon travels in the PaymentIntent metadata (not the cart), so
+            // the webhook path, which has no session, prices the order identically.
+            // Expiry and eligibility were checked when the intent was created; the
+            // buyer already paid that price, so only the usage-based limits are
+            // re-checked here, under a row lock, to keep max_uses honest.
+            $coupon = null;
+            $discount = 0;
+
+            if ($couponId = (int) ($intent->metadata['coupon_id'] ?? 0)) {
+                $coupon = Coupon::lockForUpdate()->find($couponId)
+                    ?? throw new CouponException('That code is no longer available.');
+
+                $coupon->assertRedeemable($userId);
+                $discount = $coupon->discountFor($subtotal);
+            }
+
+            $total = $subtotal - $discount;
 
             if ($total !== (int) $intent->amount_received) {
                 throw new RuntimeException('Paid amount does not match cart total.');
@@ -61,6 +81,9 @@ class OrderService
                 'user_id' => $userId,
                 'status' => 'paid',
                 'total_cents' => $total,
+                'discount_cents' => $discount,
+                'coupon_id' => $coupon?->id,
+                'coupon_code' => $coupon?->code,
                 'stripe_payment_intent_id' => $intent->id,
                 'shipping_address' => $shippingAddress,
             ]);
@@ -77,7 +100,10 @@ class OrderService
                 $product->decrement('stock', $item->quantity);
             }
 
+            $coupon?->increment('used_count');
+
             $cart->items()->delete();
+            $cart->update(['coupon_id' => null]);
 
             return $order;
         });

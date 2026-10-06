@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CouponException;
 use App\Exceptions\InsufficientStockException;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -28,11 +29,11 @@ class StripeWebhookController extends Controller
         if ($event->type === 'payment_intent.succeeded') {
             try {
                 $orders->createFromPaymentIntent($event->data->object);
-            } catch (InsufficientStockException $e) {
+            } catch (InsufficientStockException|CouponException $e) {
                 (new StripeClient(config('services.stripe.secret')))->refunds->create([
                     'payment_intent' => $event->data->object->id,
                 ]);
-                Log::warning('Refunded payment due to stock shortage', ['intent' => $event->data->object->id]);
+                Log::warning('Refunded payment: '.$e->getMessage(), ['intent' => $event->data->object->id]);
             } catch (\RuntimeException $e) {
                 // e.g. cart already consumed by the redirect flow; nothing to do
                 Log::info('Webhook order skipped: '.$e->getMessage());

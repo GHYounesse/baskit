@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CouponException;
 use App\Exceptions\InsufficientStockException;
 use App\Http\Requests\Checkout\CompleteCheckoutRequest;
 use App\Models\Cart;
+use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,6 +15,8 @@ use Stripe\StripeClient;
 
 class CheckoutController extends Controller
 {
+    public function __construct(private CartService $carts) {}
+
     public function index(Request $request)
     {
         $cart = Cart::with('items.product')->firstOrCreate(['user_id' => $request->user()->id]);
@@ -23,6 +27,7 @@ class CheckoutController extends Controller
 
         return Inertia::render('Checkout/Index', [
             'cart' => $cart,
+            'pricing' => $this->carts->pricing($cart, $request->user()),
             'stripeKey' => config('services.stripe.key'),
         ]);
     }
@@ -41,13 +46,22 @@ class CheckoutController extends Controller
             }
         }
 
-        $total = $cart->items->sum(fn ($item) => $item->quantity * $item->product->price_cents);
+        $pricing = $this->carts->pricing($cart, $request->user());
+
+        if ($pricing['coupon_error']) {
+            return response()->json([
+                'message' => "Code {$pricing['coupon']['code']}: {$pricing['coupon_error']} Remove it from your cart to continue.",
+            ], 422);
+        }
 
         $stripe = new StripeClient(config('services.stripe.secret'));
         $intent = $stripe->paymentIntents->create([
-            'amount' => $total,
+            'amount' => $pricing['total_cents'],
             'currency' => 'usd',
-            'metadata' => ['user_id' => $request->user()->id],
+            'metadata' => array_filter([
+                'user_id' => $request->user()->id,
+                'coupon_id' => $cart->coupon_id,
+            ]),
         ]);
 
         return response()->json(['clientSecret' => $intent->client_secret]);
@@ -71,7 +85,7 @@ class CheckoutController extends Controller
 
         try {
             $order = $orders->createFromPaymentIntent($intent, $data['shipping_address']);
-        } catch (InsufficientStockException $e) {
+        } catch (InsufficientStockException|CouponException $e) {
             $stripe->refunds->create(['payment_intent' => $intent->id]);
 
             return redirect()->route('cart.index')

@@ -38,6 +38,19 @@ export default function Show({ order }) {
               ))}
             </div>
 
+            {order.discount_cents > 0 && (
+              <div className="mt-3 space-y-2 border-t border-stroke pt-3 text-sm">
+                <div className="flex justify-between text-ink-muted">
+                  <span>Subtotal</span>
+                  <span>{formatMoney(order.subtotal_cents)}</span>
+                </div>
+                <div className="flex justify-between text-primary">
+                  <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ''}</span>
+                  <span>−{formatMoney(order.discount_cents)}</span>
+                </div>
+              </div>
+            )}
+
             <div className="mt-3 flex items-center justify-between border-t border-stroke pt-3 font-semibold text-ink">
               <span>Total</span>
               <span>{formatMoney(order.total_cents)}</span>

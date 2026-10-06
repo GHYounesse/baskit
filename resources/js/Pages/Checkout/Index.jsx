@@ -164,14 +164,13 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
   );
 }
 
-export default function Index({ cart, stripeKey, errors }) {
+export default function Index({ cart, pricing, stripeKey, errors }) {
   const [clientSecret, setClientSecret] = useState(null);
   const [error, setError] = useState(null);
   const [address, setAddress] = useState({
     line1: '', line2: '', city: '', state: '', postal_code: '', country: 'MA',
   });
   const stripePromise = useMemo(() => loadStripe(stripeKey), [stripeKey]);
-  const total = cart.items.reduce((sum, i) => sum + i.quantity * i.product.price_cents, 0);
 
   useEffect(() => {
     window.axios
@@ -198,7 +197,7 @@ export default function Index({ cart, stripeKey, errors }) {
                   clientSecret={clientSecret}
                   address={address}
                   addressComplete={isAddressComplete(address)}
-                  total={total}
+                  total={pricing.total_cents}
                 />
               </Elements>
             )}
@@ -216,9 +215,21 @@ export default function Index({ cart, stripeKey, errors }) {
                 </div>
               ))}
             </div>
+            {pricing.discount_cents > 0 && (
+              <div className="mt-3 space-y-2 border-t border-stroke pt-3 text-sm">
+                <div className="flex justify-between text-ink-muted">
+                  <span>Subtotal</span>
+                  <span>{formatMoney(pricing.subtotal_cents)}</span>
+                </div>
+                <div className="flex justify-between text-primary">
+                  <span>Discount ({pricing.coupon.code})</span>
+                  <span>−{formatMoney(pricing.discount_cents)}</span>
+                </div>
+              </div>
+            )}
             <div className="mt-3 flex items-center justify-between border-t border-stroke pt-3 font-semibold text-ink">
               <span>Total</span>
-              <span>{formatMoney(total)}</span>
+              <span>{formatMoney(pricing.total_cents)}</span>
             </div>
           </div>
         </div>
