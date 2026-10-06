@@ -1,6 +1,6 @@
 import Pagination from '@/Components/Pagination';
+import ProductCard from '@/Components/ProductCard';
 import ShopLayout from '@/Layouts/ShopLayout';
-import { formatMoney } from '@/utils/money';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -43,42 +43,6 @@ function CategoryChips({ categories, active, onSelect }) {
       {chip('', 'All')}
       {categories.map((c) => chip(c.slug, c.name))}
     </div>
-  );
-}
-
-function ProductCard({ product }) {
-  const outOfStock = product.stock <= 0;
-
-  return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group rounded-lg border border-stroke bg-surface p-3 transition hover:border-primary hover:shadow-sm"
-    >
-      <div className="relative mb-3 aspect-square overflow-hidden rounded-lg bg-canvas">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className={`h-full w-full object-cover transition group-hover:scale-[1.03] ${outOfStock ? 'opacity-50' : ''}`}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
-            <BasketIcon className="h-10 w-10" />
-          </div>
-        )}
-        {outOfStock && (
-          <span className="absolute left-2 top-2 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ink-muted ring-1 ring-inset ring-stroke">
-            Out of stock
-          </span>
-        )}
-      </div>
-
-      {product.category && (
-        <div className="text-xs text-ink-muted">{product.category.name}</div>
-      )}
-      <div className="truncate font-medium text-ink">{product.name}</div>
-      <div className="mt-0.5 font-semibold text-ink">{formatMoney(product.price_cents)}</div>
-    </Link>
   );
 }
 
@@ -138,6 +102,7 @@ export default function Index({ products, categories, filters }) {
             <option value="newest">Newest</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
+            <option value="rating">Top rated</option>
             <option value="name">Name: A to Z</option>
           </select>
         </div>
