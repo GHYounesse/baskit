@@ -111,6 +111,11 @@ export default function Index({ products }) {
                         }`}
                       >
                         {product.stock}
+                        {product.variants_count > 0 && (
+                          <span className="block text-xs font-normal text-ink-muted">
+                            {product.variants_count} {product.variants_count === 1 ? 'variant' : 'variants'}
+                          </span>
+                        )}
                       </td>
                       <td className="p-3">
                         <StatusPill active={product.is_active} />

@@ -3,10 +3,11 @@ import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ProductFormFields from '@/Components/Admin/ProductFormFields';
 import StockChange from '@/Components/Admin/StockChange';
+import VariantsManager from '@/Components/Admin/VariantsManager';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { formatDateTime } from '@/utils/date';
 
-export default function Edit({ product, categories, movements }) {
+export default function Edit({ product, categories, variants, movements }) {
   const { data, setData, put, processing, errors } = useForm({
     name: product.name,
     category_id: product.category_id ?? '',
@@ -65,6 +66,7 @@ export default function Edit({ product, categories, movements }) {
               onImageChange={onImageChange}
               onRemoveImage={removeImage}
               originalStock={product.stock}
+              stockLocked={variants.length > 0}
             />
 
             <div className="flex gap-3">
@@ -83,6 +85,8 @@ export default function Edit({ product, categories, movements }) {
               </button>
             </div>
           </form>
+
+          <VariantsManager product={product} variants={variants} />
 
           <section className="mt-6 rounded-lg border border-stroke bg-surface p-5" aria-labelledby="stock-history">
             <div className="flex items-baseline justify-between gap-3">
@@ -105,6 +109,7 @@ export default function Edit({ product, categories, movements }) {
                   <li key={m.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                     <div className="min-w-0">
                       <div className="text-ink">
+                        {m.variant_label && <span className="mr-1 font-medium">{m.variant_label}:</span>}
                         {m.reason_label}
                         {m.order_id && (
                           <>

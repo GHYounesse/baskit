@@ -165,6 +165,7 @@ export default function Index({ movements, filters, reasons, product, integrity 
                             {m.product_name} <span className="text-ink-muted">(deleted)</span>
                           </>
                         )}
+                        {m.variant_label && <span className="block text-xs text-ink-muted">{m.variant_label}</span>}
                       </td>
                       <td className="p-3 text-right">
                         <StockChange value={m.quantity_change} />

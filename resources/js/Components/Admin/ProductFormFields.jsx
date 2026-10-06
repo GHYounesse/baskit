@@ -36,7 +36,7 @@ export function dollarsInputToCents(value) {
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 }
 
-export default function ProductFormFields({ data, setData, errors, categories, preview, onImageChange, onRemoveImage, originalStock }) {
+export default function ProductFormFields({ data, setData, errors, categories, preview, onImageChange, onRemoveImage, originalStock, stockLocked = false }) {
   const [priceInput, setPriceInput] = useState(centsToDollarsInput(data.price_cents));
 
   const updatePrice = (value) => {
@@ -90,18 +90,24 @@ export default function ProductFormFields({ data, setData, errors, categories, p
         </div>
         <div className="flex-1">
           <Field label="Stock" error={errors.stock}>
-            <input
-              type="number"
-              min="0"
-              value={data.stock}
-              onChange={(e) => setData('stock', e.target.value)}
-              className={inputClass}
-            />
+            {stockLocked ? (
+              <div className="rounded-lg bg-canvas px-3 py-2 text-sm text-ink-muted" title="Set the stock of each variant below">
+                {data.stock} <span className="text-xs">(total of variants)</span>
+              </div>
+            ) : (
+              <input
+                type="number"
+                min="0"
+                value={data.stock}
+                onChange={(e) => setData('stock', e.target.value)}
+                className={inputClass}
+              />
+            )}
           </Field>
         </div>
       </div>
 
-      {originalStock !== undefined && Number(data.stock) !== Number(originalStock) && (
+      {!stockLocked && originalStock !== undefined && Number(data.stock) !== Number(originalStock) && (
         <Field label="Reason for the stock change (optional)" error={errors.stock_note}>
           <input
             value={data.stock_note ?? ''}
