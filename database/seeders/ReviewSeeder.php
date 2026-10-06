@@ -71,7 +71,9 @@ class ReviewSeeder extends Seeder
                 $shippedAt = $when->copy()->addDay();
                 $deliveredAt = $when->copy()->addDays(3);
 
-                $order = Order::create([
+                // forceFill, because created_at is not mass-assignable: Order::create()
+                // would silently stamp every demo order with today's date.
+                $order = (new Order)->forceFill([
                     'user_id' => $user->id,
                     'status' => 'delivered',
                     'total_cents' => $product->price_cents,
@@ -82,6 +84,7 @@ class ReviewSeeder extends Seeder
                     'created_at' => $when,
                     'updated_at' => $deliveredAt,
                 ]);
+                $order->save();
                 // (creating the order already recorded the "placed" event)
                 $order->events()->create(['type' => 'shipped', 'message' => 'Shipped with UPS.', 'created_at' => $shippedAt]);
                 $order->events()->create(['type' => 'delivered', 'message' => 'Order delivered.', 'created_at' => $deliveredAt]);
