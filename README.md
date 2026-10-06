@@ -47,7 +47,8 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Discount codes at the cart (percentage or fixed amount), with clear errors for expired, used-up or ineligible codes; the discount shows through checkout, the order page and the confirmation email
 - Product reviews: a 1-5 star rating with an optional comment, limited to customers who bought the product (cancelled orders don't count), one review each, editable and deletable by the author. Pages show the average, a rating breakdown and short author names ("Jane D."); admins can remove any review. The shop shows ratings on every card and can sort by top rated
 - Wishlist: a heart on every product card and product page saves items to the account; a Wishlist page lists them newest first with a quick "Add to cart"
-- Order history and order detail pages
+- Order history and order detail pages, each with a timeline of what has happened (placed, shipped, delivered, cancelled or refunded) and what is still to come, plus carrier and tracking number once shipped
+- Customers can cancel their own order until it ships; the payment is refunded to their card and the items return to stock
 - Role-based redirect after login/registration: admins land on the admin dashboard, everyone else lands on the shop
 
 **Payments**
@@ -56,12 +57,13 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 - Idempotent order creation: one order per PaymentIntent, enforced by a unique index
 - Stock is checked and locked inside a database transaction; the payment is refunded if stock runs out after paying
 - Coupons are priced server-side and carried in the PaymentIntent metadata, so the webhook path applies the same discount. Usage limits are re-checked under a row lock when the order is created, and the payment is refunded if the last redemption was taken in the meantime
+- Refunds go back through Stripe with an idempotency key, so a retry can never refund twice. If Stripe refuses, nothing in the order changes. Refunds made in the Stripe dashboard sync back through the `charge.refunded` webhook, and a refunded order releases its coupon use
 - Order confirmation email, queued, sent once per order regardless of which flow (redirect or webhook) creates it
 
 **Admin**
 - Dashboard with revenue, order and product counts, and a low-stock list
 - Product management (create, edit, delete, activate, image upload), with dollar-based price input
-- Order list with inline, color-coded status updates
+- Order management: each order has a detail page with ship (carrier and tracking number), mark delivered, and a full refund with an optional reason and restock. Status changes are validated (you can't ship a refunded order), logged to the order timeline, and emailed to the customer. Refunded and cancelled orders don't count as revenue
 - Coupon management: percentage or fixed discounts, minimum order, usage limit, expiry, and an on/off switch. Each customer can use a code once, and a discount never takes an order below $0.50 (Stripe's minimum charge)
 - Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
 
@@ -156,7 +158,7 @@ php artisan storage:link
 2. Forward webhooks to your local app and copy the signing secret it prints:
 
    ```bash
-   stripe listen --events payment_intent.succeeded --forward-to localhost:8000/stripe/webhook
+   stripe listen --events payment_intent.succeeded,charge.refunded --forward-to localhost:8000/stripe/webhook
    ```
 
    ```
@@ -182,7 +184,7 @@ npm run dev
 ```
 
 ```bash
-stripe listen --events payment_intent.succeeded --forward-to localhost:8000/stripe/webhook
+stripe listen --events payment_intent.succeeded,charge.refunded --forward-to localhost:8000/stripe/webhook
 ```
 
 Visit `http://127.0.0.1:8000`.
