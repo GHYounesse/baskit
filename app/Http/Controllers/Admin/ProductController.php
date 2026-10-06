@@ -7,6 +7,8 @@ use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\InventoryService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -51,12 +53,19 @@ class ProductController extends Controller
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
             'categories' => Category::all(),
+            'movements' => $product->stockMovements()->with('user:id,name')->latest('id')->limit(8)->get(),
         ]);
     }
 
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product, InventoryService $inventory)
     {
         $data = $request->validated();
+
+        // Stock is set separately: under a lock, from the stock on hand right now,
+        // with a ledger entry, rather than overwritten with what the form showed.
+        $newStock = (int) $data['stock'];
+        $stockNote = $data['stock_note'] ?? null;
+        unset($data['stock'], $data['stock_note']);
 
         if ($request->hasFile('image')) {
             $this->deleteStoredImage($product);
@@ -67,7 +76,10 @@ class ProductController extends Controller
         }
         unset($data['image'], $data['remove_image']);
 
-        $product->update($data);
+        DB::transaction(function () use ($product, $data, $inventory, $newStock, $request, $stockNote) {
+            $product->update($data);
+            $inventory->setStock($product, $newStock, $request->user(), $stockNote);
+        });
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');
     }
