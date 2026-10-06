@@ -40,6 +40,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 
 **Shopping**
 - Browse products by category (as tappable chips), with search, sorting and pagination
+- Full-text search with live suggestions: as you type, the search box shows matching products (with a photo, category and price) and categories, with the matched part of each name in bold. Searches rank by relevance (a hit in the name beats one in the description), match the start of words ("wire head" finds "Wireless Headphones"), ignore case and accents, offer "Did you mean ...?" for misspellings, and remember your recent searches. The box works fully by keyboard and with screen readers
 - Product detail page with a stock-aware quantity stepper, live line total and related products
 - Product images, with an admin upload flow and a stock-photo fallback for seeded demo data
 - Guest cart that is merged into the user's cart on login or registration
@@ -236,6 +237,15 @@ Use any future expiry, any CVC and any postal code.
 | `QUEUE_CONNECTION` | Queue driver (`database` by default) — order confirmation emails are queued jobs |
 | `MAIL_MAILER` | `log` by default (emails write to `storage/logs/laravel.log`); set a real driver to actually deliver them |
 
+## Search
+
+Product search runs on SQLite's built-in full-text engine (FTS5), so it needs no extra service. A `product_search` index is created by a migration and kept in step automatically when products or categories change. Matches are ranked with BM25, weighting the name 10x, the category 4x and the description 1x.
+
+- `php artisan search:reindex` rebuilds the index from scratch (for example after importing products directly into the database).
+- On other databases (MySQL, Postgres) the app falls back to a portable `LIKE` search with the same rules, chosen automatically. There is nothing to index.
+- Both engines implement `App\Services\Search\ProductSearch`. To use Meilisearch, Typesense or Laravel Scout instead, write one more class with its four methods and bind it in `AppServiceProvider`.
+- The suggestions endpoint is `GET /search/suggest?q=...` (rate limited, JSON). Queries are reduced to plain words before they reach the engine, so search syntax and SQL can't be injected through the box.
+
 ## Scheduled tasks
 
 Abandoned guest carts are deleted daily by `php artisan carts:prune-guests` (default: older than 30 days, change with `--days`). In production, add the standard Laravel scheduler cron entry:
@@ -252,7 +262,7 @@ Locally, `php artisan schedule:work` runs it.
 app/
   Http/Controllers/     Shop, cart, checkout, orders, Stripe webhook, admin
   Http/Requests/        Form requests for cart, checkout and admin product/order actions
-  Services/             CartService (guest/user carts), OrderService (order creation)
+  Services/             CartService (guest/user carts), OrderService (order creation), Search/ (product search)
   Listeners/            MergeGuestCart (runs on login)
   Mail/                 OrderConfirmation
   Policies/             OrderPolicy, ProductPolicy
