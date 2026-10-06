@@ -34,7 +34,7 @@ class Product extends Model
     public function wasPurchasedBy(User $user): bool
     {
         return OrderItem::where('product_id', $this->id)
-            ->whereHas('order', fn ($q) => $q->where('user_id', $user->id)->where('status', '!=', 'cancelled'))
+            ->whereHas('order', fn ($q) => $q->where('user_id', $user->id)->whereNotIn('status', Order::RETURNED_STATUSES))
             ->exists();
     }
 

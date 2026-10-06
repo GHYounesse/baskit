@@ -16,8 +16,8 @@ class DashboardController extends Controller
 
     public function index()
     {
-        // Cancelled orders never brought in revenue.
-        $completedOrders = Order::where('status', '!=', 'cancelled');
+        // Cancelled and refunded orders gave the money back, so they are not revenue.
+        $completedOrders = Order::whereNotIn('status', Order::RETURNED_STATUSES);
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [

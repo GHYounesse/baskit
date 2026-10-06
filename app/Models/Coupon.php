@@ -80,7 +80,10 @@ class Coupon extends Model
 
     public function hasBeenUsedBy(int $userId): bool
     {
-        return Order::where('user_id', $userId)->where('coupon_id', $this->id)->exists();
+        return Order::where('user_id', $userId)
+            ->where('coupon_id', $this->id)
+            ->whereNotIn('status', Order::RETURNED_STATUSES)
+            ->exists();
     }
 
     /**
