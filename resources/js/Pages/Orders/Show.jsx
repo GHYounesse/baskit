@@ -1,10 +1,11 @@
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import OrderTimeline from '@/Components/OrderTimeline';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ShopLayout from '@/Layouts/ShopLayout';
+import PageHeader from '@/Components/PageHeader';
 import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Show({ order, timeline, canCancel }) {
@@ -25,10 +26,19 @@ export default function Show({ order, timeline, canCancel }) {
   const refunded = order.status === 'cancelled' || order.status === 'refunded';
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Order #{order.id}</h2>}>
+    <>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-2xl px-6 py-8">
           <Head title={`Order #${order.id}`} />
+
+          <Link
+            href="/orders"
+            className="-ml-2 mb-4 inline-block rounded px-2 py-2 text-sm text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            ← My orders
+          </Link>
+
+          <PageHeader title={`Order #${order.id}`} />
 
           <div className="rounded-lg border border-stroke bg-surface p-5">
             <div className="flex items-center justify-between">
@@ -100,7 +110,7 @@ export default function Show({ order, timeline, canCancel }) {
                 <button
                   type="button"
                   onClick={() => setConfirmingCancel(true)}
-                  className="mt-3 rounded-lg border border-red-600 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-red-950"
+                  className="mt-3 rounded-lg border border-danger px-4 py-2.5 text-sm font-semibold text-danger transition hover:bg-danger-light focus:outline-none focus-visible:ring-2 focus-visible:ring-danger dark:hover:bg-red-950"
                 >
                   Cancel order
                 </button>
@@ -139,6 +149,8 @@ export default function Show({ order, timeline, canCancel }) {
         We'll refund {formatMoney(order.total_cents)} to your original payment method, usually within 5 to 10
         business days. This can't be undone.
       </ConfirmDialog>
-    </AuthenticatedLayout>
+    </>
   );
 }
+
+Show.layout = (page) => <ShopLayout>{page}</ShopLayout>;

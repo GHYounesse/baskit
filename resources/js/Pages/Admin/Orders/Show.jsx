@@ -3,6 +3,7 @@ import Modal from '@/Components/Modal';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import OrderTimeline from '@/Components/OrderTimeline';
 import SecondaryButton from '@/Components/SecondaryButton';
+import PageHeader from '@/Components/PageHeader';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatDateTime } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
@@ -47,7 +48,7 @@ function ShipForm({ order }) {
             <option key={c} value={c} />
           ))}
         </datalist>
-        {errors.tracking_carrier && <span className="mt-1 block text-sm text-red-600">{errors.tracking_carrier}</span>}
+        {errors.tracking_carrier && <span className="mt-1 block text-sm text-danger">{errors.tracking_carrier}</span>}
       </label>
 
       <label className="block">
@@ -58,12 +59,12 @@ function ShipForm({ order }) {
           className={inputClass}
           autoComplete="off"
         />
-        {errors.tracking_number && <span className="mt-1 block text-sm text-red-600">{errors.tracking_number}</span>}
+        {errors.tracking_number && <span className="mt-1 block text-sm text-danger">{errors.tracking_number}</span>}
       </label>
 
       <button
         disabled={processing}
-        className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+        className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
       >
         {processing ? 'Saving…' : 'Mark as shipped'}
       </button>
@@ -111,7 +112,7 @@ function RefundDialog({ order, show, onClose }) {
             placeholder="Shown in the order timeline"
             className={inputClass}
           />
-          {errors.reason && <span className="mt-1 block text-sm text-red-600">{errors.reason}</span>}
+          {errors.reason && <span className="mt-1 block text-sm text-danger">{errors.reason}</span>}
         </label>
 
         <label className="mt-4 flex items-center gap-2 text-sm text-ink">
@@ -125,7 +126,7 @@ function RefundDialog({ order, show, onClose }) {
         </label>
 
         {errors.order && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-100 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
+          <p role="alert" className="mt-4 rounded-lg bg-danger-light px-3 py-2 text-sm text-danger">
             {errors.order}
           </p>
         )}
@@ -175,7 +176,7 @@ function ActionsCard({ order, actions }) {
               type="button"
               onClick={markDelivered}
               disabled={delivering}
-              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
             >
               {delivering ? 'Saving…' : 'Mark as delivered'}
             </button>
@@ -187,7 +188,7 @@ function ActionsCard({ order, actions }) {
             <button
               type="button"
               onClick={() => setRefunding(true)}
-              className="w-full rounded-lg border border-red-600 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-red-950"
+              className="w-full rounded-lg border border-danger py-2.5 text-sm font-semibold text-danger transition hover:bg-danger-light focus:outline-none focus-visible:ring-2 focus-visible:ring-danger dark:hover:bg-red-950"
             >
               Refund {formatMoney(order.total_cents)}
             </button>
@@ -204,14 +205,7 @@ export default function Show({ order, timeline, actions }) {
   const address = order.shipping_address;
 
   return (
-    <AuthenticatedLayout
-      header={
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-display text-2xl font-bold text-ink">Order #{order.id}</h2>
-          <OrderStatusBadge status={order.status} />
-        </div>
-      }
-    >
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <Head title={`Order #${order.id}`} />
@@ -222,6 +216,10 @@ export default function Show({ order, timeline, actions }) {
           >
             ← All orders
           </Link>
+
+          <PageHeader title={`Order #${order.id}`}>
+            <OrderStatusBadge status={order.status} />
+          </PageHeader>
 
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">

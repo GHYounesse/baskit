@@ -4,8 +4,8 @@ const DOT_STYLES = {
   placed: 'bg-primary',
   shipped: 'bg-blue-500',
   delivered: 'bg-primary',
-  cancelled: 'bg-red-500',
-  refunded: 'bg-red-500',
+  cancelled: 'bg-danger',
+  refunded: 'bg-danger',
 };
 
 function Step({ title, detail, time, dot, pending = false, last = false }) {

@@ -5,6 +5,7 @@ import RangeFilter from '@/Components/Charts/RangeFilter';
 import RevenueChart from '@/Components/Charts/RevenueChart';
 import StatTile from '@/Components/Charts/StatTile';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import { formatDay } from '@/utils/date';
 import { formatMoney, formatMoneyWhole, formatNumber } from '@/utils/money';
 import { Head, router } from '@inertiajs/react';
@@ -54,10 +55,12 @@ export default function Index({ range, ranges, period, kpis, revenueSeries, topP
   }));
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Analytics</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <Head title="Analytics" />
+
+          <PageHeader title="Analytics" />
 
           {/* One filter row for the whole page: every number and chart below follows it. */}
           <div className="flex flex-wrap items-center justify-between gap-3">

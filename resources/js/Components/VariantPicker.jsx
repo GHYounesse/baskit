@@ -104,7 +104,7 @@ export default function VariantPicker({ variants, selection, onChange, error }) 
           onSelect={(value) => onChange(chooseOption(variants, selection, 'color', value))}
         />
       )}
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
     </div>
   );
 }

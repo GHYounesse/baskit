@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import ProductFormFields from '@/Components/Admin/ProductFormFields';
 
 export default function Create({ categories }) {
@@ -27,10 +28,12 @@ export default function Create({ categories }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">New product</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-lg px-6 py-8">
           <Head title="New product" />
+
+          <PageHeader title="New product" />
 
           <form onSubmit={submit} className="space-y-6 rounded-lg border border-stroke bg-surface p-5">
             <ProductFormFields
@@ -44,7 +47,7 @@ export default function Create({ categories }) {
 
             <button
               disabled={processing}
-              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover disabled:opacity-50"
             >
               Create product
             </button>

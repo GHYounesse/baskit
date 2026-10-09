@@ -11,7 +11,7 @@ function Field({ label, error, children, className = '' }) {
     <label className={`block ${className}`}>
       <span className="mb-1 block text-xs font-medium text-ink-muted">{label}</span>
       {children}
-      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
+      {error && <span className="mt-1 block text-xs text-danger">{error}</span>}
     </label>
   );
 }
@@ -91,7 +91,7 @@ function AddVariant({ product, hasVariants, onDone }) {
       <div className="mt-4 flex gap-3">
         <button
           disabled={form.processing}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
+          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
         >
           {form.processing ? 'Adding…' : 'Add variant'}
         </button>
@@ -130,7 +130,7 @@ function EditVariant({ variant, onDone }) {
       <div className="mt-4 flex gap-3">
         <button
           disabled={form.processing}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
+          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
         >
           {form.processing ? 'Saving…' : 'Save'}
         </button>
@@ -220,7 +220,7 @@ export default function VariantsManager({ product, variants }) {
                   <button
                     type="button"
                     onClick={() => setPendingDelete(variant)}
-                    className="-my-2 rounded px-2 py-2.5 text-sm text-red-600 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="-my-2 rounded px-2 py-2.5 text-sm text-danger hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Remove
                   </button>

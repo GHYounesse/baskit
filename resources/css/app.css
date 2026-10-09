@@ -6,6 +6,7 @@
   --baskit-primary: #00A86B;
   --baskit-primary-hover: #008F5B;
   --baskit-primary-light: #DDF7ED;
+  --baskit-on-primary: #FFFFFF;
 
   --baskit-brand-dark: #063C32;
 
@@ -21,6 +22,13 @@
   --baskit-text: #17201D;
   --baskit-text-muted: #66736E;
 
+  /* Status colors. Each pair is a readable text color and a quiet tint that
+     sits behind it; the dark theme swaps both so they keep their contrast. */
+  --baskit-danger: #B42318;
+  --baskit-danger-light: #FDE8E6;
+  --baskit-warning: #92560A;
+  --baskit-warning-light: #FCEFCF;
+
   /* The one data-series color for charts. The dark theme's brighter brand
      green fails the dark chart band (too light, it glares), so charts use
      the base brand green in both themes; checked with the dataviz validator
@@ -34,6 +42,7 @@
   --baskit-primary: #12C982;
   --baskit-primary-hover: #20D991;
   --baskit-primary-light: #123D30;
+  --baskit-on-primary: #04231B;
 
   --baskit-brand-dark: #12C982;
 
@@ -43,4 +52,9 @@
 
   --baskit-text: #F1F7F4;
   --baskit-text-muted: #A6B8B1;
+
+  --baskit-danger: #FF8A7A;
+  --baskit-danger-light: #3D1713;
+  --baskit-warning: #F2C26B;
+  --baskit-warning-light: #3A2A0B;
 }

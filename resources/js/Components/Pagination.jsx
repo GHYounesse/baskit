@@ -18,7 +18,7 @@ export default function Pagination({ links }) {
                         aria-current={link.active ? 'page' : undefined}
                         className={`min-w-9 rounded-lg px-3 py-2 text-center text-sm font-medium transition ${
                             link.active
-                                ? 'bg-primary text-white'
+                                ? 'bg-primary text-primary-on'
                                 : 'text-ink-muted hover:bg-primary-light hover:text-ink'
                         }`}
                         dangerouslySetInnerHTML={{ __html: link.label }}

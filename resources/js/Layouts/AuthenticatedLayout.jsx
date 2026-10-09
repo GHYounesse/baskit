@@ -1,6 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import AssistantWidget from '@/Components/Assistant/AssistantWidget';
 import FlashBanner from '@/Components/FlashBanner';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -8,35 +7,13 @@ import ThemeToggle from '@/Components/ThemeToggle';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-function CartLink({ count, ...props }) {
-    return (
-        <NavLink href="/cart" {...props}>
-            Cart
-            {count > 0 && (
-                <span className="ms-1.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-semibold text-white">
-                    {count}
-                </span>
-            )}
-        </NavLink>
-    );
-}
-
-function WishlistLink({ count, ...props }) {
-    return (
-        <NavLink href="/wishlist" {...props}>
-            Wishlist
-            {count > 0 && (
-                <span className="ms-1.5 rounded-full bg-primary-light px-1.5 py-0.5 text-xs font-semibold text-primary">
-                    {count}
-                </span>
-            )}
-        </NavLink>
-    );
-}
-
-export default function AuthenticatedLayout({ header, children }) {
+/**
+ * Shell for the admin area. It carries only admin destinations plus a way
+ * back to the storefront; shopper links (cart, wishlist, orders) live in
+ * ShopLayout so the two areas never show each other's navigation.
+ */
+export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
-    const { cartCount, wishlistIds } = usePage().props;
     const [showingNav, setShowingNav] = useState(false);
 
     return (
@@ -48,36 +25,25 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ApplicationLogo className="h-8 w-auto" />
                         </Link>
                         <div className="hidden items-center gap-1 sm:flex">
-                            {user.is_admin && (
-                                <>
-                                    <NavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
-                                        Dashboard
-                                    </NavLink>
-                                    <NavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
-                                        Products
-                                    </NavLink>
-                                    <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
-                                        Orders
-                                    </NavLink>
-                                    <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
-                                        Analytics
-                                    </NavLink>
-                                    <NavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
-                                        Inventory
-                                    </NavLink>
-                                    <NavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
-                                        Coupons
-                                    </NavLink>
-                                </>
-                            )}
-                            <NavLink href="/" active={route().current('shop.index')}>
-                                Shop
+                            <NavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
+                                Dashboard
                             </NavLink>
-                            <CartLink count={cartCount} active={route().current('cart.index')} />
-                            <WishlistLink count={wishlistIds.length} active={route().current('wishlist.index')} />
-                            <NavLink href="/orders" active={route().current('orders.*')}>
-                                My Orders
+                            <NavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
+                                Products
                             </NavLink>
+                            <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
+                                Orders
+                            </NavLink>
+                            <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
+                                Analytics
+                            </NavLink>
+                            <NavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
+                                Inventory
+                            </NavLink>
+                            <NavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
+                                Coupons
+                            </NavLink>
+                            <NavLink href="/">Shop</NavLink>
                         </div>
                     </div>
 
@@ -133,40 +99,25 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div className={(showingNav ? 'block' : 'hidden') + ' border-t border-stroke sm:hidden'}>
                     <div className="space-y-1 py-2">
-                        {user.is_admin && (
-                            <>
-                                <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
-                                    Dashboard
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
-                                    Products
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
-                                    Orders
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
-                                    Analytics
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
-                                    Inventory
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
-                                    Coupons
-                                </ResponsiveNavLink>
-                            </>
-                        )}
-                        <ResponsiveNavLink href="/" active={route().current('shop.index')}>
-                            Shop
+                        <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
+                            Dashboard
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href="/cart" active={route().current('cart.index')}>
-                            Cart {cartCount > 0 && `(${cartCount})`}
+                        <ResponsiveNavLink href={route('admin.products.index')} active={route().current('admin.products.*')}>
+                            Products
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href="/wishlist" active={route().current('wishlist.index')}>
-                            Wishlist {wishlistIds.length > 0 && `(${wishlistIds.length})`}
+                        <ResponsiveNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
+                            Orders
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href="/orders" active={route().current('orders.*')}>
-                            My Orders
+                        <ResponsiveNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
+                            Analytics
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('admin.inventory.index')} active={route().current('admin.inventory.*')}>
+                            Inventory
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
+                            Coupons
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href="/">Shop</ResponsiveNavLink>
                     </div>
                     <div className="border-t border-stroke py-2">
                         <div className="px-3 py-2 text-sm font-medium text-ink-muted">{user.name}</div>
@@ -178,15 +129,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
-            {header && (
-                <header className="border-b border-stroke bg-surface">
-                    <div className="mx-auto max-w-7xl px-4 py-6 text-ink sm:px-6 lg:px-8">{header}</div>
-                </header>
-            )}
-
             <FlashBanner />
             <main>{children}</main>
-            <AssistantWidget />
         </div>
     );
 }

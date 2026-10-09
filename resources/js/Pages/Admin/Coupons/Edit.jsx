@@ -1,6 +1,7 @@
 import CouponFormFields, { toDateTimeInput } from '@/Components/Admin/CouponFormFields';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -33,10 +34,12 @@ export default function Edit({ coupon }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Edit coupon</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-lg px-6 py-8">
           <Head title={`Edit ${coupon.code}`} />
+
+          <PageHeader title="Edit coupon" />
 
           <p className="mb-4 text-sm text-ink-muted">
             Used {coupon.used_count} {coupon.used_count === 1 ? 'time' : 'times'}
@@ -49,14 +52,14 @@ export default function Edit({ coupon }) {
             <div className="flex gap-3">
               <button
                 disabled={processing}
-                className="flex-1 rounded-lg bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
+                className="flex-1 rounded-lg bg-primary py-3 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
               >
                 Save changes
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(true)}
-                className="rounded-lg border border-red-600 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-red-950"
+                className="rounded-lg border border-danger px-4 py-3 text-sm font-semibold text-danger transition hover:bg-danger-light focus:outline-none focus-visible:ring-2 focus-visible:ring-danger dark:hover:bg-red-950"
               >
                 Delete
               </button>

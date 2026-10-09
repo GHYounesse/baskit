@@ -14,7 +14,7 @@ function Field({ label, error, children }) {
     <div>
       <label className="mb-1 block text-sm font-medium text-ink">{label}</label>
       {children}
-      {error && <div className="mt-1 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-1 text-sm text-danger">{error}</div>}
     </div>
   );
 }
@@ -144,7 +144,7 @@ export default function ProductFormFields({ data, setData, errors, categories, p
           <div className="flex-1">
             <input type="file" accept="image/*" onChange={onImageChange} className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary-light file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20" />
             {onRemoveImage && preview && !data.image && (
-              <button type="button" onClick={onRemoveImage} className="mt-1 text-sm text-red-600 hover:text-red-700">
+              <button type="button" onClick={onRemoveImage} className="mt-1 text-sm text-danger hover:underline">
                 Remove image
               </button>
             )}

@@ -1,6 +1,7 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import ProductFormFields from '@/Components/Admin/ProductFormFields';
 import StockChange from '@/Components/Admin/StockChange';
 import VariantsManager from '@/Components/Admin/VariantsManager';
@@ -51,10 +52,12 @@ export default function Edit({ product, categories, variants, movements }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Edit product</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-lg px-6 py-8">
           <Head title="Edit product" />
+
+          <PageHeader title="Edit product" />
 
           <form onSubmit={submit} className="space-y-6 rounded-lg border border-stroke bg-surface p-5">
             <ProductFormFields
@@ -72,14 +75,14 @@ export default function Edit({ product, categories, variants, movements }) {
             <div className="flex gap-3">
               <button
                 disabled={processing}
-                className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+                className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover disabled:opacity-50"
               >
                 Save changes
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(true)}
-                className="rounded-lg border border-red-600 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
+                className="rounded-lg border border-danger px-4 py-2.5 text-sm font-semibold text-danger transition hover:bg-danger-light"
               >
                 Delete
               </button>

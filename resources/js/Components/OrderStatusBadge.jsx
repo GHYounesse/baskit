@@ -1,9 +1,9 @@
 const STATUS_STYLES = {
-  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+  pending: 'bg-warning-light text-warning',
   paid: 'bg-primary-light text-primary',
   shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
-  delivered: 'bg-primary text-white',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+  delivered: 'bg-primary text-primary-on',
+  cancelled: 'bg-danger-light text-danger',
   refunded: 'bg-stroke text-ink',
 };
 

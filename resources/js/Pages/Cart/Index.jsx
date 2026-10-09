@@ -1,3 +1,4 @@
+import PageHeader from '@/Components/PageHeader';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
@@ -70,7 +71,7 @@ function CartRow({ item }) {
           <button
             type="button"
             onClick={() => router.delete(`/cart/${item.id}`, { preserveScroll: true })}
-            className="-mx-2 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="-mx-2 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Remove
           </button>
@@ -102,12 +103,12 @@ function CouponBox({ coupon, error: couponError }) {
           <button
             type="button"
             onClick={() => router.delete('/cart/coupon', { preserveScroll: true })}
-            className="-my-2 -mr-2 shrink-0 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="-my-2 -mr-2 shrink-0 rounded px-2 py-2 text-sm text-ink-muted transition hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Remove
           </button>
         </div>
-        {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
+        {couponError && <p className="mt-2 text-sm text-danger">{couponError}</p>}
       </div>
     );
   }
@@ -139,7 +140,7 @@ function CouponBox({ coupon, error: couponError }) {
         </button>
       </div>
       {errors.code && (
-        <p id="coupon-error" className="mt-2 text-sm text-red-600">
+        <p id="coupon-error" className="mt-2 text-sm text-danger">
           {errors.code}
         </p>
       )}
@@ -167,14 +168,14 @@ export default function Index({ cart, pricing }) {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <Head title="Your cart" />
 
-        <h1 className="font-display text-2xl font-bold text-ink">Your cart</h1>
+        <PageHeader title="Your cart" />
 
         {cart.items.length === 0 ? (
-          <div className="mt-6">
+          <div>
             <EmptyCart />
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="rounded-lg border border-stroke bg-surface px-4 lg:col-span-2">
               {cart.items.map((item) => (
                 <CartRow key={item.id} item={item} />
@@ -200,7 +201,7 @@ export default function Index({ cart, pricing }) {
               <CouponBox coupon={pricing.coupon} error={pricing.coupon_error} />
               <Link
                 href="/checkout"
-                className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-white transition hover:bg-primary-hover"
+                className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
               >
                 {auth.user ? 'Checkout' : 'Log in to checkout'}
               </Link>

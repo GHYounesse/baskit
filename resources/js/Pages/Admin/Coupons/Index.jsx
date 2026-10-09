@@ -1,6 +1,7 @@
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import Pagination from '@/Components/Pagination';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, router } from '@inertiajs/react';
@@ -9,8 +10,8 @@ import { useState } from 'react';
 const STATUS_STYLES = {
   active: 'bg-primary-light text-primary',
   disabled: 'bg-stroke text-ink-muted',
-  expired: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-  'used up': 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+  expired: 'bg-warning-light text-warning',
+  'used up': 'bg-warning-light text-warning',
 };
 
 function TagIcon(props) {
@@ -50,19 +51,19 @@ export default function Index({ coupons }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Manage coupons</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <Head title="Manage coupons" />
 
-          <div className="mb-4 flex justify-end">
+          <PageHeader title="Manage coupons">
             <Link
               href="/admin/coupons/create"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
             >
-              + New coupon
+                + New coupon
             </Link>
-          </div>
+          </PageHeader>
 
           {coupons.data.length === 0 ? (
             <EmptyCoupons />
@@ -110,7 +111,7 @@ export default function Index({ coupons }) {
                           </Link>
                           <button
                             onClick={() => setPendingDelete(coupon)}
-                            className="-my-2 rounded px-2 py-2.5 text-red-600 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="-my-2 rounded px-2 py-2.5 text-danger hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
                             Delete
                           </button>

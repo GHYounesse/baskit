@@ -1,6 +1,7 @@
 import StockChange from '@/Components/Admin/StockChange';
 import Pagination from '@/Components/Pagination';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import { formatDateTime } from '@/utils/date';
 import { formatNumber } from '@/utils/money';
 import { Head, Link, router } from '@inertiajs/react';
@@ -38,7 +39,7 @@ function IntegrityBanner({ integrity }) {
   }
 
   return (
-    <div role="alert" className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+    <div role="alert" className="rounded-lg border border-danger bg-danger-light px-4 py-3 text-sm text-danger">
       <div className="flex items-center gap-2 font-semibold">
         <WarningIcon className="h-4 w-4 shrink-0" />
         {integrity.count} {integrity.count === 1 ? 'product has' : 'products have'} stock that doesn't match its history
@@ -121,10 +122,12 @@ function Filters({ filters, reasons, product }) {
 
 export default function Index({ movements, filters, reasons, product, integrity }) {
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Inventory log</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <Head title="Inventory log" />
+
+          <PageHeader title="Inventory log" />
 
           <IntegrityBanner integrity={integrity} />
 

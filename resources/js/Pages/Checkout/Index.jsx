@@ -1,3 +1,4 @@
+import PageHeader from '@/Components/PageHeader';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
 import { useState, useEffect, useMemo } from 'react';
@@ -32,7 +33,7 @@ function Field({ label, error, children }) {
     <label className="block">
       <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
       {children}
-      {error && <span className="mt-1 block text-sm text-red-600">{error}</span>}
+      {error && <span className="mt-1 block text-sm text-danger">{error}</span>}
     </label>
   );
 }
@@ -45,7 +46,7 @@ function ShippingAddressForm({ address, setAddress, errors }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-medium text-ink">Shipping address</h2>
+      <h2 className="font-display text-lg font-bold text-ink">Shipping address</h2>
 
       <Field label="Address line 1" error={errors['shipping_address.line1']}>
         <input value={address.line1} onChange={update('line1')} className={inputClass} autoComplete="address-line1" required />
@@ -132,7 +133,7 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="font-medium text-ink">Payment</h2>
+      <h2 className="font-display text-lg font-bold text-ink">Payment</h2>
       <div className="rounded-lg border border-stroke bg-surface px-3 py-3">
         <CardElement
           options={{
@@ -148,10 +149,10 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
           }}
         />
       </div>
-      {cardError && <p className="text-sm text-red-600">{cardError}</p>}
+      {cardError && <p className="text-sm text-danger">{cardError}</p>}
       <button
         disabled={!stripe || processing || !addressComplete}
-        className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
+        className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
       >
         {processing ? 'Processing…' : `Pay ${formatMoney(total)}`}
       </button>
@@ -184,10 +185,10 @@ export default function Index({ cart, pricing, stripeKey, errors }) {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <Head title="Checkout" />
 
-        <h1 className="font-display text-2xl font-bold text-ink">Checkout</h1>
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+        <PageHeader title="Checkout" />
+        {error && <p className="mb-4 text-sm text-danger">{error}</p>}
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-8 rounded-lg border border-stroke bg-surface p-5 lg:col-span-2">
             <ShippingAddressForm address={address} setAddress={setAddress} errors={errors ?? {}} />
 

@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ShopLayout from '@/Layouts/ShopLayout';
+import PageHeader from '@/Components/PageHeader';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
@@ -27,10 +28,12 @@ function EmptyOrders() {
 
 export default function Index({ orders }) {
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">My orders</h2>}>
+    <>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-3xl px-6 py-8">
           <Head title="My orders" />
+
+          <PageHeader title="My orders" />
 
           {orders.length === 0 ? (
             <EmptyOrders />
@@ -58,6 +61,8 @@ export default function Index({ orders }) {
           )}
         </div>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 }
+
+Index.layout = (page) => <ShopLayout>{page}</ShopLayout>;

@@ -41,7 +41,7 @@ function Delta({ current, previous, upIsGood, comparedTo }) {
   const rounded = Math.abs(change) < 0.05;
   const up = change > 0;
   const good = rounded ? null : up === upIsGood;
-  const tone = rounded ? 'text-ink-muted' : good ? 'text-brand' : 'text-red-600 dark:text-red-400';
+  const tone = rounded ? 'text-ink-muted' : good ? 'text-brand' : 'text-danger';
 
   return (
     <p className="mt-2 flex flex-wrap items-center gap-x-1.5 text-sm">

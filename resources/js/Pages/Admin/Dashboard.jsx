@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import { formatDate } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
@@ -24,10 +25,12 @@ function Section({ title, children }) {
 
 export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Admin dashboard</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-5xl space-y-8 px-6 py-8">
           <Head title="Admin dashboard" />
+
+          <PageHeader title="Admin dashboard" />
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Revenue" value={formatMoney(stats.revenue_cents)} />
@@ -55,11 +58,11 @@ export default function Dashboard({ stats, lowStockProducts, recentOrders }) {
                         <td className="p-3 text-ink">{product.name}</td>
                         <td className="p-3">
                           {product.stock === 0 ? (
-                            <span className="inline-block rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-300">
+                            <span className="inline-block rounded-full bg-danger-light px-2.5 py-1 text-xs font-medium text-danger">
                               Out of stock
                             </span>
                           ) : (
-                            <span className="font-medium text-amber-600">{product.stock}</span>
+                            <span className="font-medium text-warning">{product.stock}</span>
                           )}
                         </td>
                         <td className="p-3 text-right">

@@ -1,4 +1,5 @@
 import ProductCard from '@/Components/ProductCard';
+import PageHeader from '@/Components/PageHeader';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -57,7 +58,7 @@ function AddToCart({ product }) {
           onFinish: () => setAdding(false),
         });
       }}
-      className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+      className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
     >
       {adding ? 'Adding...' : 'Add to cart'}
     </button>
@@ -70,19 +71,17 @@ export default function Index({ products }) {
       <div className="mx-auto max-w-6xl px-6 py-8">
         <Head title="Wishlist" />
 
-        <h1 className="font-display text-2xl font-bold text-ink">Wishlist</h1>
-        {products.length > 0 && (
-          <p className="mt-1 text-sm text-ink-muted">
-            {products.length} saved {products.length === 1 ? 'item' : 'items'}
-          </p>
-        )}
+        <PageHeader
+          title="Wishlist"
+          description={products.length > 0 ? `${products.length} saved ${products.length === 1 ? 'item' : 'items'}` : undefined}
+        />
 
         {products.length === 0 ? (
-          <div className="mt-6">
+          <div>
             <EmptyWishlist />
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
               <ProductCard key={product.id} product={product}>
                 <AddToCart product={product} />

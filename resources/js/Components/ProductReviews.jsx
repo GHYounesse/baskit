@@ -30,7 +30,7 @@ function RatingSummary({ ratings }) {
             <div key={stars} className="flex items-center gap-3 text-sm">
               <span className="w-12 shrink-0 text-ink-muted">{stars} stars</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-stroke">
-                <div className="h-full rounded-full bg-amber-500" style={{ width: `${percent}%` }} />
+                <div className="h-full rounded-full bg-warning" style={{ width: `${percent}%` }} />
               </div>
               <span className="w-6 shrink-0 text-right text-ink-muted">{count}</span>
             </div>
@@ -67,7 +67,7 @@ function ReviewForm({ product, review, onDone }) {
 
       <div className="mt-3">
         <StarInput value={data.rating} onChange={(n) => setData('rating', n)} />
-        {errors.rating && <p className="mt-1 text-sm text-red-600">{errors.rating}</p>}
+        {errors.rating && <p className="mt-1 text-sm text-danger">{errors.rating}</p>}
       </div>
 
       <div className="mt-3">
@@ -82,14 +82,14 @@ function ReviewForm({ product, review, onDone }) {
           placeholder="What did you like or dislike? How are you using it?"
           className={textareaClass}
         />
-        {errors.body && <p className="mt-1 text-sm text-red-600">{errors.body}</p>}
+        {errors.body && <p className="mt-1 text-sm text-danger">{errors.body}</p>}
       </div>
 
       <div className="mt-4 flex gap-3">
         <button
           type="submit"
           disabled={processing}
-          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
         >
           {processing ? 'Saving…' : editing ? 'Save changes' : 'Post review'}
         </button>
@@ -136,7 +136,7 @@ function ReviewItem({ review, mine = false, onEdit, onDelete }) {
             <button
               type="button"
               onClick={onDelete}
-              className="-ml-2 rounded px-2 py-2 text-ink-muted hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="-ml-2 rounded px-2 py-2 text-ink-muted hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {mine ? 'Delete' : 'Delete (admin)'}
             </button>

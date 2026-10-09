@@ -51,7 +51,7 @@ function StockStatus({ stock }) {
   return (
     <span className="inline-flex items-center gap-2 text-sm font-medium text-ink">
       <span
-        className={`h-2 w-2 rounded-full ${low ? 'bg-amber-500' : 'bg-primary'}`}
+        className={`h-2 w-2 rounded-full ${low ? 'bg-warning' : 'bg-primary'}`}
         aria-hidden="true"
       />
       {low ? `Only ${stock} left` : 'In stock'}
@@ -252,7 +252,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
                     <button
                       type="submit"
                       disabled={processing || Boolean(missing)}
-                      className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+                      className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
                     >
                       <BasketIcon className="h-5 w-5" />
                       {missing ?? (processing ? 'Adding...' : `Add to cart · ${formatMoney(lineTotal)}`)}

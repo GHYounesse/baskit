@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/PageHeader';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import Pagination from '@/Components/Pagination';
 import { formatMoney } from '@/utils/money';
@@ -58,19 +59,19 @@ export default function Index({ products }) {
   };
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-display text-2xl font-bold text-ink">Manage products</h2>}>
+    <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <Head title="Manage products" />
 
-          <div className="mb-4 flex justify-end">
+          <PageHeader title="Manage products">
             <Link
               href="/admin/products/create"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
             >
-              + New product
+                + New product
             </Link>
-          </div>
+          </PageHeader>
 
           {products.data.length === 0 ? (
             <EmptyProducts />
@@ -107,7 +108,7 @@ export default function Index({ products }) {
                       <td className="p-3 text-right text-ink">{formatMoney(product.price_cents)}</td>
                       <td
                         className={`p-3 text-right ${
-                          product.stock <= LOW_STOCK_THRESHOLD ? 'font-medium text-amber-600' : 'text-ink'
+                          product.stock <= LOW_STOCK_THRESHOLD ? 'font-medium text-warning' : 'text-ink'
                         }`}
                       >
                         {product.stock}
@@ -125,7 +126,7 @@ export default function Index({ products }) {
                           <Link href={`/admin/products/${product.id}/edit`} className="-my-2 rounded px-2 py-2.5 text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             Edit
                           </Link>
-                          <button onClick={() => setPendingDelete(product)} className="-my-2 rounded px-2 py-2.5 text-red-600 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                          <button onClick={() => setPendingDelete(product)} className="-my-2 rounded px-2 py-2.5 text-danger hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             Delete
                           </button>
                         </div>

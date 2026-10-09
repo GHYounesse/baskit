@@ -317,7 +317,7 @@ export default function AssistantWidget() {
           aria-label="Open shopping assistant"
           aria-expanded="false"
           aria-controls={panelId}
-          className="fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-safe:hover:scale-105"
+          className="fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-on shadow-lg transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-safe:hover:scale-105"
         >
           <ChatIcon className="h-7 w-7" />
         </button>
@@ -331,17 +331,17 @@ export default function AssistantWidget() {
           onKeyDown={(e) => e.key === 'Escape' && close()}
           className="fixed inset-0 z-40 flex flex-col bg-surface text-ink sm:inset-auto sm:bottom-4 sm:right-4 sm:h-[min(36rem,calc(100vh-2rem))] sm:w-[24rem] sm:overflow-hidden sm:rounded-xl sm:border sm:border-stroke sm:shadow-2xl"
         >
-          <header className="flex items-center justify-between gap-2 border-b border-stroke bg-primary px-4 py-3 text-white">
+          <header className="flex items-center justify-between gap-2 border-b border-stroke bg-primary px-4 py-3 text-primary-on">
             <div className="min-w-0">
               <h2 className="font-display text-base font-bold leading-tight">Shopping assistant</h2>
-              <p className="text-xs text-white/80">Answers from live store data</p>
+              <p className="text-xs opacity-80">Answers from live store data</p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
                 onClick={restart}
                 aria-label="Start a new chat"
-                className="flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-on"
               >
                 <RestartIcon className="h-5 w-5" />
               </button>
@@ -349,7 +349,7 @@ export default function AssistantWidget() {
                 type="button"
                 onClick={close}
                 aria-label="Close assistant"
-                className="flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-on"
               >
                 <CloseIcon className="h-5 w-5" />
               </button>
@@ -360,7 +360,7 @@ export default function AssistantWidget() {
             {messages.map((message, i) =>
               message.role === 'user' ? (
                 <div key={i} className="flex justify-end">
-                  <p className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-sm bg-primary px-3.5 py-2 text-sm text-white">
+                  <p className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-sm bg-primary px-3.5 py-2 text-sm text-primary-on">
                     {message.text}
                   </p>
                 </div>
@@ -435,7 +435,7 @@ export default function AssistantWidget() {
                 type="submit"
                 disabled={busy || text.trim() === ''}
                 aria-label="Send message"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-white transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 sm:h-10 sm:w-10"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 sm:h-10 sm:w-10"
               >
                 <SendIcon className="h-5 w-5" />
               </button>

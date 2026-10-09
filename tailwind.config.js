@@ -22,11 +22,20 @@ export default {
                     DEFAULT: 'var(--baskit-primary)',
                     hover: 'var(--baskit-primary-hover)',
                     light: 'var(--baskit-primary-light)',
+                    on: 'var(--baskit-on-primary)',
                 },
                 brand: {
                     DEFAULT: 'var(--baskit-brand-dark)',
                 },
                 panel: 'var(--baskit-panel)',
+                danger: {
+                    DEFAULT: 'var(--baskit-danger)',
+                    light: 'var(--baskit-danger-light)',
+                },
+                warning: {
+                    DEFAULT: 'var(--baskit-warning)',
+                    light: 'var(--baskit-warning-light)',
+                },
                 series: 'var(--chart-series)',
                 surface: 'var(--baskit-surface)',
                 canvas: 'var(--baskit-background)',

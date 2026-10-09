@@ -13,7 +13,7 @@ function CartLink({ count, ...props }) {
         <NavLink href="/cart" {...props}>
             Cart
             {count > 0 && (
-                <span className="ms-1.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-semibold text-white">
+                <span className="ms-1.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-on">
                     {count}
                 </span>
             )}
@@ -97,7 +97,7 @@ export default function ShopLayout({ children }) {
                                 </Link>
                                 <Link
                                     href={route('register')}
-                                    className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+                                    className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
                                 >
                                     Sign up
                                 </Link>

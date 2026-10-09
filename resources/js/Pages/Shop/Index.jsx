@@ -1,6 +1,7 @@
 import Pagination from '@/Components/Pagination';
 import ProductCard from '@/Components/ProductCard';
 import SearchBox from '@/Components/SearchBox';
+import PageHeader from '@/Components/PageHeader';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, router } from '@inertiajs/react';
 
@@ -21,7 +22,7 @@ function CategoryChips({ categories, active, onSelect }) {
       onClick={() => onSelect(value)}
       className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
         active === value
-          ? 'bg-primary text-white'
+          ? 'bg-primary text-primary-on'
           : 'bg-surface text-ink-muted ring-1 ring-inset ring-stroke hover:text-ink'
       }`}
     >
@@ -86,10 +87,9 @@ export default function Index({ products, categories, filters, correction }) {
       <div className="mx-auto max-w-6xl px-6 py-8">
         <Head title="Shop" />
 
-        <h1 className="font-display text-2xl font-bold text-ink">Shop</h1>
-        <p className="mt-1 text-sm text-ink-muted">Everything for today's basket.</p>
+        <PageHeader title="Shop" description="Everything for today's basket." />
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <SearchBox
             initialValue={filters.search ?? ''}
             onSearch={search}
