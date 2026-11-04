@@ -305,6 +305,7 @@ tailwind.config.js      Maps the Baskit color tokens and fonts into Tailwind uti
 ```bash
 ./vendor/bin/pint        # code style
 php artisan test         # tests
+npm run test:e2e         # browser tests (Playwright; builds the frontend, runs on its own database)
 npm run build            # production frontend build
 ```
 
