@@ -1,0 +1,49 @@
+# Version control and local tooling
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+.claude
+.docker-local
+.vscode
+.idea
+
+# Dependencies and build output (rebuilt inside the image)
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+
+# Secrets and local environment
+.env
+.env.*
+!.env.production.example
+
+# Runtime data (bootstrap/cache holds local package manifests that include dev packages)
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/*
+database/*.sqlite
+database/*.sqlite-*
+
+# Tests and their output
+tests
+e2e
+playwright-report
+test-results
+playwright.config.ts
+phpunit.xml
+.phpunit.cache
+
+# Docs and the Docker files themselves
+docs
+*.md
+Dockerfile
+compose*.yaml
+Makefile
