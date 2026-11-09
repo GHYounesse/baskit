@@ -1,0 +1,35 @@
+# Local development helpers: PostgreSQL and the Vite dev server in containers.
+# PHP itself runs on your machine (`php artisan serve`)
+
+name: baskit-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: baskit
+      POSTGRES_USER: baskit
+      POSTGRES_PASSWORD: baskit
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baskit -d baskit"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  vite:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - .:/app
+      - node_modules-dev:/app/node_modules
+
+volumes:
+  pgdata-dev:
+  node_modules-dev:
