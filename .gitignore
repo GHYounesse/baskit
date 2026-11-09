@@ -31,3 +31,6 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 /e2e/.auth/
+
+# Local Docker trial stack
+/.docker-local/

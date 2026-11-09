@@ -16,7 +16,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 ## Table of contents
 
 - [Screenshots](#screenshots) · [Features](#features) · [How payments work](#how-payments-work) · [Tech stack](#tech-stack)
-- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [Roadmap](#roadmap)
+- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [Docker and deployment](#docker-and-deployment) · [Roadmap](#roadmap)
 
 ## Screenshots
 
@@ -310,6 +310,45 @@ npm run build            # production frontend build
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guidelines.
+
+## Docker and deployment
+
+The app ships as one image (PHP 8.3-FPM, built from the multi-stage [Dockerfile](Dockerfile)) that runs behind the host's Nginx on a single VPS. [compose.yaml](compose.yaml) starts five containers:
+
+| Service | Role |
+|---|---|
+| `app` | PHP-FPM; also copies the built assets to a volume for `web` |
+| `web` | Nginx, published only on `127.0.0.1:8081` (the host's Nginx proxies to it) |
+| `queue` | `queue:work`, sends the queued e-mails |
+| `scheduler` | `schedule:work`, runs the daily jobs |
+| `db` | PostgreSQL 16 on a named volume, never published |
+
+**Deploy flow:** every push to `main` runs [docker-deploy.yml](.github/workflows/docker-deploy.yml): tests, then the image is built and pushed to GHCR tagged with the git SHA and `latest`, then the workflow connects over SSH and runs [deploy.sh](deploy.sh) (pull, start, `migrate --force` in a one-off container, health check). If a migration or the health check fails, `deploy.sh` goes back to the previous tag by itself; if the public `/up` smoke test fails, the workflow rolls back. Migrations are never run at container start, and a rollback does not undo them.
+
+**Configuration:** the server's `.env` (never in git) is built from [.env.production.example](.env.production.example). `RUN_OPTIMIZE=true` caches config, routes and views when a container starts. `TRUSTED_PROXIES=*` makes Laravel trust the host Nginx's `X-Forwarded-Proto`, so URLs and secure cookies use https. Stripe runs in test mode only.
+
+**One-time server setup** (Docker, deploy user, host Nginx, HTTPS, GitHub secrets): see [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md).
+
+Try the production stack locally (needs Docker). It runs from a git-ignored `.docker-local/` folder, so your development `.env` stays untouched. `WITH_DEV=1` keeps Faker in this trial image only, so the demo seeders work; the production build never sets it.
+
+```bash
+docker build --build-arg WITH_DEV=1 -t ghcr.io/ghyounesse/baskit:local-demo .
+mkdir -p .docker-local/docker/nginx && cp compose.yaml .docker-local/ && cp docker/nginx/default.conf .docker-local/docker/nginx/
+cp .env.production.example .docker-local/.env
+```
+
+In `.docker-local/.env` set `APP_KEY` (`php artisan key:generate --show`), `DB_PASSWORD`, `IMAGE_TAG=local-demo`, `APP_URL=http://127.0.0.1:8081`, `SESSION_SECURE_COOKIE=false` and `MAIL_MAILER=log`. Then:
+
+```bash
+cd .docker-local
+docker compose up -d
+docker compose run --rm --no-deps -T app php artisan migrate --force
+docker compose run --rm --no-deps -T app php artisan db:seed --force
+```
+
+Open http://127.0.0.1:8081 (`admin@example.com` / `password`). Card payments need your Stripe **test** keys in that `.env`. Stop it with `docker compose down` (add `-v` to also delete the data).
+
+For local development, [compose.dev.yaml](compose.dev.yaml) provides PostgreSQL and the Vite dev server (`make up`, `make down`, `make logs`, `make test`).
 
 ## Roadmap
 
