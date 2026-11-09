@@ -24,7 +24,7 @@ class InventoryController extends Controller
             ->with('user:id,name')
             ->when($reason, fn ($query, $r) => $query->where('reason', $r))
             ->when($productId, fn ($query, $id) => $query->where('product_id', $id))
-            ->when($search !== '', fn ($query) => $query->where('product_name', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($query) => $query->whereLike('product_name', "%{$search}%"))
             ->latest('id')
             ->paginate(25)
             ->withQueryString();

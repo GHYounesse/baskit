@@ -44,7 +44,10 @@ class ShopController extends Controller
             ->when(
                 $byRelevance && $ids !== [],
                 fn ($q) => $q->orderByRaw('CASE products.id '.implode(' ', array_map(fn ($id, $i) => "WHEN {$id} THEN {$i}", $ids, array_keys($ids))).' END'),
-                fn ($q) => $q->orderBy($column, $direction),
+                // PostgreSQL sorts NULL first when descending; unrated products belong last.
+                fn ($q) => $sort === 'rating'
+                    ? $q->orderByRaw('reviews_avg_rating DESC NULLS LAST')
+                    : $q->orderBy($column, $direction),
             )
             // Among equal averages, the one backed by more reviews ranks higher.
             ->when($sort === 'rating', fn ($q) => $q->orderByDesc('reviews_count'))
