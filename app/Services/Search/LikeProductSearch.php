@@ -37,9 +37,9 @@ class LikeProductSearch implements ProductSearch
             ->where(function ($q) use ($terms) {
                 foreach ($terms as $term) {
                     $q->where(fn ($q) => $q
-                        ->where('name', 'like', "%{$term}%")
-                        ->orWhere('description', 'like', "%{$term}%")
-                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$term}%")));
+                        ->whereLike('name', "%{$term}%")
+                        ->orWhereLike('description', "%{$term}%")
+                        ->orWhereHas('category', fn ($c) => $c->whereLike('name', "%{$term}%")));
                 }
             })
             ->limit(self::CANDIDATES)

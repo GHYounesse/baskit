@@ -74,7 +74,7 @@ class StoreSearch
         return Category::query()
             ->where(function ($q) use ($terms) {
                 foreach ($terms as $term) {
-                    $q->where('name', 'like', "%{$term}%");
+                    $q->whereLike('name', "%{$term}%");
                 }
             })
             ->orderBy('name')
