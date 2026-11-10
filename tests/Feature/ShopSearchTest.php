@@ -13,7 +13,7 @@ class ShopSearchTest extends TestCase
 
     private function shop(array $query = []): array
     {
-        return $this->get('/?'.http_build_query($query))->assertOk()->viewData('page')['props'];
+        return $this->get('/shop?'.http_build_query($query))->assertOk()->viewData('page')['props'];
     }
 
     private function names(array $props): array
@@ -98,7 +98,7 @@ class ShopSearchTest extends TestCase
         Product::factory()->create(['name' => 'Wireless Headphones']);
 
         foreach (['"', '*', "'; DROP TABLE products; --", 'NEAR(', '%', '   '] as $nasty) {
-            $this->get('/?'.http_build_query(['search' => $nasty]))->assertOk();
+            $this->get('/shop?'.http_build_query(['search' => $nasty]))->assertOk();
         }
     }
 

@@ -231,7 +231,7 @@ class ReviewTest extends TestCase
         Review::factory()->create(['product_id' => $low->id, 'rating' => 2]);
         Review::factory()->create(['product_id' => $high->id, 'rating' => 5]);
 
-        $products = $this->get('/?sort=rating')->viewData('page')['props']['products']['data'];
+        $products = $this->get('/shop?sort=rating')->viewData('page')['props']['products']['data'];
 
         $this->assertSame(['High', 'Low', 'Unrated'], array_column($products, 'name'));
         $this->assertEquals(5, $products[0]['reviews_avg_rating']);

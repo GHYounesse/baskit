@@ -10,7 +10,7 @@ test.describe('login', () => {
 
   test('a customer lands in the shop and can log out', async ({ page }) => {
     await logIn(page, ACCOUNTS.customer);
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/shop');
 
     await page.getByRole('button', { name: /Demo Customer/ }).click();
     await page.getByRole('button', { name: 'Log out' }).click();

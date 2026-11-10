@@ -16,7 +16,7 @@ class ShopSortingTest extends TestCase
         Product::factory()->create(['name' => 'Cheap', 'price_cents' => 1000, 'is_active' => true]);
         Product::factory()->create(['name' => 'Pricey', 'price_cents' => 3000, 'is_active' => true]);
 
-        $response = $this->get('/?sort=price_asc');
+        $response = $this->get('/shop?sort=price_asc');
 
         $names = collect($response->viewData('page')['props']['products']['data'])->pluck('name');
         $this->assertSame(['Cheap', 'Mid', 'Pricey'], $names->all());
@@ -28,7 +28,7 @@ class ShopSortingTest extends TestCase
         Product::factory()->create(['name' => 'Cheap', 'price_cents' => 1000, 'is_active' => true]);
         Product::factory()->create(['name' => 'Pricey', 'price_cents' => 3000, 'is_active' => true]);
 
-        $response = $this->get('/?sort=price_desc');
+        $response = $this->get('/shop?sort=price_desc');
 
         $names = collect($response->viewData('page')['props']['products']['data'])->pluck('name');
         $this->assertSame(['Pricey', 'Mid', 'Cheap'], $names->all());
@@ -39,7 +39,7 @@ class ShopSortingTest extends TestCase
         Product::factory()->create(['name' => 'Zebra', 'is_active' => true]);
         Product::factory()->create(['name' => 'Apple', 'is_active' => true]);
 
-        $response = $this->get('/?sort=name');
+        $response = $this->get('/shop?sort=name');
 
         $names = collect($response->viewData('page')['props']['products']['data'])->pluck('name');
         $this->assertSame(['Apple', 'Zebra'], $names->all());
@@ -47,6 +47,6 @@ class ShopSortingTest extends TestCase
 
     public function test_invalid_sort_falls_back_to_newest(): void
     {
-        $this->get('/?sort=not-a-real-column')->assertOk();
+        $this->get('/shop?sort=not-a-real-column')->assertOk();
     }
 }
