@@ -153,7 +153,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
 
       <div className="mx-auto max-w-6xl px-6 py-8">
         <Link
-          href={product.category ? `/?category=${product.category.slug}` : '/'}
+          href={product.category ? `/shop?category=${product.category.slug}` : '/shop'}
           className="inline-flex items-center gap-1 rounded text-sm text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -181,7 +181,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
           <div>
             {product.category && (
               <Link
-                href={`/?category=${product.category.slug}`}
+                href={`/shop?category=${product.category.slug}`}
                 className="inline-block rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-brand transition hover:opacity-80"
               >
                 {product.category.name}
@@ -225,7 +225,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
                   <p className="font-medium text-ink">This one is out of stock right now.</p>
                   <div className="mt-4 flex flex-wrap items-center gap-4">
                     <WishlistButton product={product} variant="full" />
-                    <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
+                    <Link href="/shop" className="text-sm font-medium text-primary hover:text-primary-hover">
                       Keep shopping
                     </Link>
                   </div>

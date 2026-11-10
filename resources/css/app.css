@@ -58,3 +58,45 @@
   --baskit-warning: #F2C26B;
   --baskit-warning-light: #3A2A0B;
 }
+
+/* Home page hero: the product photos slide in along the brand's speed-line diagonal,
+   once, and their trail of lines fades out behind them. Visitors who ask for reduced
+   motion see the finished composition straight away. */
+.hero-tile {
+  transform: rotate(var(--tilt, 0deg));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-tile {
+    animation: hero-slide 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  .hero-tile .hero-trail {
+    transform-origin: right center;
+    animation: hero-trail 1100ms ease-out both;
+    animation-delay: var(--delay, 0ms);
+  }
+}
+
+@keyframes hero-slide {
+  from {
+    opacity: 0;
+    transform: translate(110px, -30px) rotate(calc(var(--tilt, 0deg) + 7deg));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes hero-trail {
+  0% {
+    opacity: 0.95;
+    transform: translateY(-50%) scaleX(1.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50%) scaleX(0.4);
+  }
+}

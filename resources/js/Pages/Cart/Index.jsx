@@ -153,7 +153,7 @@ function EmptyCart() {
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-stroke py-20 text-center">
       <BasketIcon className="h-8 w-8 text-ink-muted/50" />
       <div className="font-medium text-ink">Your cart is empty</div>
-      <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
+      <Link href="/shop" className="text-sm font-medium text-primary hover:text-primary-hover">
         Browse the shop
       </Link>
     </div>

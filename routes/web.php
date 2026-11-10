@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantCo
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
@@ -26,7 +27,8 @@ Route::get('/dashboard', function (Request $request) {
     return redirect()->route($request->user()->is_admin ? 'admin.dashboard' : 'shop.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::post('/assistant/message', [AssistantController::class, 'message'])->middleware('throttle:assistant')->name('assistant.message');
 Route::post('/assistant/reset', [AssistantController::class, 'reset'])->middleware('throttle:assistant')->name('assistant.reset');
 Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1')->name('search.suggest');

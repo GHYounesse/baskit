@@ -43,7 +43,7 @@ export default function AuthenticatedLayout({ children }) {
                             <NavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
                                 Coupons
                             </NavLink>
-                            <NavLink href="/">Shop</NavLink>
+                            <NavLink href="/shop">Shop</NavLink>
                         </div>
                     </div>
 
@@ -117,7 +117,7 @@ export default function AuthenticatedLayout({ children }) {
                         <ResponsiveNavLink href={route('admin.coupons.index')} active={route().current('admin.coupons.*')}>
                             Coupons
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href="/">Shop</ResponsiveNavLink>
+                        <ResponsiveNavLink href="/shop">Shop</ResponsiveNavLink>
                     </div>
                     <div className="border-t border-stroke py-2">
                         <div className="px-3 py-2 text-sm font-medium text-ink-muted">{user.name}</div>

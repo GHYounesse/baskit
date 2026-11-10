@@ -59,7 +59,7 @@ function EmptyState({ hasFilters, search, correction, onSearch }) {
         </p>
       )}
       {hasFilters && (
-        <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
+        <Link href="/shop" className="text-sm font-medium text-primary hover:text-primary-hover">
           Clear filters
         </Link>
       )}
@@ -71,7 +71,7 @@ export default function Index({ products, categories, filters, correction }) {
   const hasFilters = Boolean(filters.search || filters.category);
 
   const updateQuery = (changes) => {
-    router.get('/', { ...filters, ...changes }, { preserveState: true, preserveScroll: true });
+    router.get('/shop', { ...filters, ...changes }, { preserveState: true, preserveScroll: true });
   };
 
   // A new search starts over on "best match" (an old sort choice shouldn't stick).
@@ -93,7 +93,7 @@ export default function Index({ products, categories, filters, correction }) {
           <SearchBox
             initialValue={filters.search ?? ''}
             onSearch={search}
-            onPickCategory={(slug) => router.get('/', { category: slug })}
+            onPickCategory={(slug) => router.get('/shop', { category: slug })}
           />
           <select
             value={filters.sort ?? 'newest'}

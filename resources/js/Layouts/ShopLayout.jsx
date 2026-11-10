@@ -48,7 +48,7 @@ export default function ShopLayout({ children }) {
                             <ApplicationLogo className="h-8 w-auto" />
                         </Link>
                         <div className="hidden items-center gap-1 sm:flex">
-                            <NavLink href="/" active={route().current('shop.index')}>
+                            <NavLink href="/shop" active={route().current('shop.index')}>
                                 Shop
                             </NavLink>
                             <CartLink count={cartCount} active={route().current('cart.index')} />
@@ -134,7 +134,7 @@ export default function ShopLayout({ children }) {
 
                 <div className={(showingNav ? 'block' : 'hidden') + ' border-t border-stroke sm:hidden'}>
                     <div className="space-y-1 py-2">
-                        <ResponsiveNavLink href="/" active={route().current('shop.index')}>
+                        <ResponsiveNavLink href="/shop" active={route().current('shop.index')}>
                             Shop
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href="/cart" active={route().current('cart.index')}>

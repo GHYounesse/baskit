@@ -21,7 +21,7 @@ function EmptyWishlist() {
       <HeartIcon className="h-8 w-8 text-ink-muted/50" />
       <div className="font-medium text-ink">Nothing saved yet</div>
       <p className="max-w-xs text-sm text-ink-muted">Tap the heart on any product to keep it here for later.</p>
-      <Link href="/" className="text-sm font-medium text-primary hover:text-primary-hover">
+      <Link href="/shop" className="text-sm font-medium text-primary hover:text-primary-hover">
         Browse the shop
       </Link>
     </div>
