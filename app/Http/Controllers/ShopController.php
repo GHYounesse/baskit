@@ -59,7 +59,7 @@ class ShopController extends Controller
         $category = $categories->firstWhere('slug', $request->input('category'));
 
         return Inertia::render('Shop/Index', [
-            'seo' => StoreSeo::shop($category)->toArray(),
+            'seo' => StoreSeo::shop($category, $products->currentPage(), $term !== '', $products->isNotEmpty())->toArray(),
             'products' => $products,
             'categories' => $categories,
             'filters' => [

@@ -32,26 +32,39 @@ final class StoreSeo
     }
 
     /**
-     * The catalogue at /shop, or the catalogue of one category.
+     * The catalogue at /shop, or the catalogue of one category
      *
-     * Only the category is part of the official address.
+
+     *
+     * @param  int  $page  The page of results being shown (1 is the first).
+     * @param  bool  $isSearch  True when the visitor typed a search.
+     * @param  bool  $hasResults  False when the page lists no product at all.
      */
-    public static function shop(?Category $category = null): PageSeo
+    public static function shop(?Category $category = null, int $page = 1, bool $isSearch = false, bool $hasResults = true): PageSeo
     {
-        if ($category) {
-            return new PageSeo(
-                title: $category->name,
-                description: "Browse {$category->name} at Baskit: see what is in stock, read the reviews and add what you like to your basket.",
-                image: self::DEFAULT_IMAGE,
-                path: '/shop?category='.$category->slug,
-            );
+        if ($isSearch) {
+            return new PageSeo(title: 'Search', noindex: true, followLinks: true);
+        }
+
+        if (! $hasResults) {
+            return new PageSeo(title: 'Shop', noindex: true, followLinks: true);
+        }
+
+        $path = $category ? '/shop?category='.$category->slug : '/shop';
+        $title = $category ? $category->name : 'Shop';
+
+        if ($page > 1) {
+            $path .= (str_contains($path, '?') ? '&' : '?').'page='.$page;
+            $title .= " (page {$page})";
         }
 
         return new PageSeo(
-            title: 'Shop',
-            description: 'Everything in the Baskit catalogue, with search, categories and sorting by price or rating.',
+            title: $title,
+            description: $category
+                ? "Browse {$category->name} at Baskit: see what is in stock, read the reviews and add what you like to your basket."
+                : 'Everything in the Baskit catalogue, with search, categories and sorting by price or rating.',
             image: self::DEFAULT_IMAGE,
-            path: '/shop',
+            path: $path,
         );
     }
 

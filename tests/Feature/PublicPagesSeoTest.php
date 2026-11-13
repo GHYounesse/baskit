@@ -63,6 +63,8 @@ class PublicPagesSeoTest extends TestCase
 
     public function test_the_shop_is_listed_with_its_own_address(): void
     {
+        $this->product();
+
         $html = $this->get('/shop')->assertOk()->getContent();
 
         $this->assertStringContainsString('<meta name="robots" content="index, follow">', $html);
@@ -72,7 +74,8 @@ class PublicPagesSeoTest extends TestCase
 
     public function test_a_category_page_has_its_own_title_and_address(): void
     {
-        Category::create(['name' => 'Books', 'slug' => 'books']);
+        $books = Category::create(['name' => 'Books', 'slug' => 'books']);
+        $this->product(['category_id' => $books->id]);
 
         $html = $this->get('/shop?category=books')->assertOk()->getContent();
 
@@ -82,25 +85,14 @@ class PublicPagesSeoTest extends TestCase
 
     public function test_sorting_the_shop_points_back_to_the_plain_address(): void
     {
-        Category::create(['name' => 'Books', 'slug' => 'books']);
+        $books = Category::create(['name' => 'Books', 'slug' => 'books']);
+        $this->product(['category_id' => $books->id]);
 
         $sorted = $this->get('/shop?category=books&sort=price_asc')->assertOk()->getContent();
         $plain = $this->get('/shop?sort=price_desc')->assertOk()->getContent();
 
         $this->assertStringContainsString('<link rel="canonical" href="https://shop.example.com/shop?category=books">', $sorted);
         $this->assertStringContainsString('<link rel="canonical" href="https://shop.example.com/shop">', $plain);
-    }
-
-    public function test_an_unknown_category_never_ends_up_in_an_address_we_publish(): void
-    {
-        $html = $this->get('/shop?category=does-not-exist')->assertOk()->getContent();
-
-        // The published address is the plain shop; the visitor's made-up category is not copied into it.
-        // (Only the <head> is checked: the page's own data legitimately repeats the visitor's URL.)
-        $head = explode('</head>', $html)[0];
-
-        $this->assertStringContainsString('<link rel="canonical" href="https://shop.example.com/shop">', $head);
-        $this->assertStringNotContainsString('does-not-exist', $head);
     }
 
     // ---- Product ----

@@ -22,6 +22,8 @@ final class PageSeo
      * @param  string|null  $path  The ONE official address of the page
      * @param  string  $type  What kind of page it is for link previews: "website" or "product".
      * @param  bool  $noindex  True means "search engines, do not list this page".
+     * @param  bool  $followLinks  Only matters with $noindex. True means "do not list this page, but do follow
+     *                             its links"
      * @param  array<string, mixed>|null  $jsonLd  Extra facts for Google in its own format (schema.org),
      *                                             for example a product's price and availability.
      */
@@ -32,6 +34,7 @@ final class PageSeo
         public readonly ?string $path = null,
         public readonly string $type = 'website',
         public readonly bool $noindex = false,
+        public readonly bool $followLinks = false,
         public readonly ?array $jsonLd = null,
     ) {}
 
@@ -107,7 +110,11 @@ final class PageSeo
             'type' => $this->type,
             'site_name' => $site,
             // The instruction read by search engines: may they list this page?
-            'robots' => $this->noindex ? 'noindex, nofollow' : 'index, follow',
+            'robots' => match (true) {
+                ! $this->noindex => 'index, follow',
+                $this->followLinks => 'noindex, follow',
+                default => 'noindex, nofollow',
+            },
             'json_ld' => $this->jsonLd,
         ];
     }
