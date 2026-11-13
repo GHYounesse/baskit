@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\StoreSeo;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -60,6 +61,7 @@ class HomeController extends Controller
             ->get();
 
         return Inertia::render('Home', [
+            'seo' => StoreSeo::home()->toArray(),
             'hero' => $hero->map(fn (Product $p) => [
                 'id' => $p->id,
                 'name' => $p->name,

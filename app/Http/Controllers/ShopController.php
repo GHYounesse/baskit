@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
 use App\Services\Search\StoreSearch;
+use App\Support\StoreSeo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -54,9 +55,13 @@ class ShopController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $categories = Category::all();
+        $category = $categories->firstWhere('slug', $request->input('category'));
+
         return Inertia::render('Shop/Index', [
+            'seo' => StoreSeo::shop($category)->toArray(),
             'products' => $products,
-            'categories' => Category::all(),
+            'categories' => $categories,
             'filters' => [
                 ...$request->only(['category', 'search']),
                 'sort' => $sort,
@@ -84,10 +89,13 @@ class ShopController extends Controller
         $user = $request->user();
         $myReview = $user ? $product->reviews()->with('user')->where('user_id', $user->id)->first() : null;
 
+        $ratings = $product->ratingSummary();
+
         return Inertia::render('Shop/Show', [
+            'seo' => StoreSeo::product($product, $ratings)->toArray(),
             'product' => $product->load('category', 'variants'),
             'related' => $related,
-            'ratings' => $product->ratingSummary(),
+            'ratings' => $ratings,
             'reviews' => $product->reviews()
                 ->with('user')
                 ->when($myReview, fn ($q) => $q->whereKeyNot($myReview->id))
