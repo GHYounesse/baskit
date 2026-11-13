@@ -4,7 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @php($seo = $page['props']['seo'] ?? null)
+        <title inertia>{{ $seo['title'] ?? config('app.name', 'Laravel') }}</title>
+        @if ($seo)
+            @include('partials.seo', ['seo' => $seo])
+        @endif
 
         <link rel="icon" type="image/png" href="/assets/images/favicon-light_mode.png">
 

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\CartService;
+use App\Support\PageSeo;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,8 @@ class HandleInertiaRequests extends Middleware
             'assistant' => [
                 'enabled' => (bool) config('assistant.enabled'),
             ],
+            // The default SEO of every page
+            'seo' => PageSeo::hidden()->toArray(),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
             ],
