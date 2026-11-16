@@ -19,8 +19,7 @@ return [
         'key' => env('GEMINI_API_KEY'),
         'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
 
-        // "-latest" aliases follow Google's current Flash model, which accepts images.
-        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-lite-latest'),
 
         'timeout' => (int) env('GEMINI_TIMEOUT', 45),
     ],

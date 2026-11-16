@@ -39,7 +39,11 @@ class GeminiClient implements LlmClient
                     'generationConfig' => ['temperature' => 0.4],
                 ]);
         } catch (ConnectionException $e) {
-            throw new LlmException('The AI service did not answer in time. Try again.', 0, $e);
+            Log::warning('Gemini connection failed', ['error' => mb_substr($e->getMessage(), 0, 300)]);
+
+            throw new LlmException(str_contains($e->getMessage(), 'cURL error 28')
+                ? 'The AI service did not answer in time. Try again.'
+                : 'Could not reach the AI service. Check the internet connection and SSL certificate setup of this server.', 0, $e);
         }
 
         if ($response->failed()) {
@@ -48,7 +52,7 @@ class GeminiClient implements LlmClient
                 'body' => mb_substr($response->body(), 0, 500),
             ]);
 
-            throw new LlmException($response->status() === 429
+            throw new LlmException(in_array($response->status(), [429, 503], true)
                 ? 'The AI service is busy right now. Try again in a minute.'
                 : 'The AI service could not answer. Try again, or fill the form by hand.');
         }
