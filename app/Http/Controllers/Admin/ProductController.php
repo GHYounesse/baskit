@@ -28,7 +28,10 @@ class ProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
-        return Inertia::render('Admin/Products/Create', ['categories' => Category::all()]);
+        return Inertia::render('Admin/Products/Create', [
+            'categories' => Category::all(),
+            'aiEnabled' => (bool) config('ai.enabled'),
+        ]);
     }
 
     public function store(StoreProductRequest $request)

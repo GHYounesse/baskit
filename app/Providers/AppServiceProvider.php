@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Ai\GeminiClient;
+use App\Services\Ai\LlmClient;
 use App\Services\Assistant\ConversationEngine;
 use App\Services\Assistant\RuleBasedEngine;
 use App\Services\Payments\PaymentRefunder;
@@ -31,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
         // Who answers the shopping assistant's questions. The built-in engine reads the
         // store's own data. A language-model engine would implement the same interface.
         $this->app->bind(ConversationEngine::class, RuleBasedEngine::class);
+
+        // Who answers AI helper requests (product drafting). Tests swap in a fake.
+        $this->app->bind(LlmClient::class, fn () => new GeminiClient);
 
         $this->app->singleton(ProductSearch::class, fn () => DB::getDriverName() === 'sqlite' && Schema::hasTable('product_search')
             ? new FtsProductSearch

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductDraftController as AdminProductDraftController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\CartController;
@@ -69,6 +70,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
+    Route::post('products/draft', AdminProductDraftController::class)->middleware('throttle:20,1')->name('products.draft');
     Route::resource('products', AdminProductController::class)->except('show');
     Route::post('products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('products.variants.store');
     Route::put('variants/{variant}', [AdminProductVariantController::class, 'update'])->name('variants.update');
