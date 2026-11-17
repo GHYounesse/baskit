@@ -16,7 +16,7 @@ A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React
 ## Table of contents
 
 - [Screenshots](#screenshots) · [Features](#features) · [How payments work](#how-payments-work) · [Tech stack](#tech-stack)
-- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [Docker and deployment](#docker-and-deployment) · [Roadmap](#roadmap)
+- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [SEO](#seo) · [Docker and deployment](#docker-and-deployment) · [Roadmap](#roadmap)
 
 ## Screenshots
 
@@ -310,6 +310,35 @@ npm run build            # production frontend build
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guidelines.
+
+## SEO
+
+Search engines and link previews (WhatsApp, LinkedIn, X) do not run JavaScript, so Baskit writes its SEO tags **on the server**, in the HTML `<head>`.
+
+| What | Where |
+|---|---|
+| The facts about a page (title, description, image, official address, whether it may be listed) | `App\Support\PageSeo` |
+| The rules for the public pages: home, shop, category, product | `App\Support\StoreSeo` |
+| The `<head>` tags | `resources/views/partials/seo.blade.php`, included by `app.blade.php` |
+| `/robots.txt` and `/sitemap.xml` | `SeoController` and `App\Support\Sitemap` |
+
+**Safe by default.** A page that sets nothing is sent with `noindex, nofollow`, so the cart, checkout, orders and admin can never show up in search results by accident. A public page opts in by passing its own `seo` prop:
+
+```php
+return Inertia::render('Shop/Show', [
+    'seo' => StoreSeo::product($product, $ratings)->toArray(),
+    // ...
+]);
+```
+
+**What is listed, and how**
+- The home page, the shop, each category with products, and every active product. A product page also carries structured data (price, stock, average rating) so Google can show them in its results.
+- Searches are not listed (`noindex, follow`), pages 2 and up have their own address and title, and sorting points back to the plain address.
+- `/sitemap.xml` follows the same rules. `/robots.txt` blocks only areas that must never be visited; pages that carry a `noindex` tag stay open so robots can read it.
+- **Outside production, `robots.txt` blocks everything** (`APP_ENV` is not `production`), so a test copy of the site is never indexed. Production needs `APP_ENV=production`.
+- Every address is built from `APP_URL`, never from the request's `Host` header, so it must be the real public address (`https://shop.younesghalloum.dev`).
+
+**After the first deploy:** add the site in [Google Search Console](https://search.google.com/search-console), verify the domain with a DNS record in Cloudflare, then submit `https://shop.younesghalloum.dev/sitemap.xml`. Indexing takes days to weeks.
 
 ## Docker and deployment
 

@@ -212,6 +212,25 @@ docker compose exec app php artisan tinker
 
 (The demo seeders need Faker, a dev dependency that is not in the production image.)
 
+## 12. Let Google find the shop
+
+Once the shop answers on `https://shop.younesghalloum.dev`:
+
+1. Check the two files crawlers ask for first:
+
+   ```bash
+   curl -s https://shop.younesghalloum.dev/robots.txt
+   curl -s https://shop.younesghalloum.dev/sitemap.xml | head -20
+   ```
+
+   `robots.txt` must list the private areas and end with `Sitemap: https://shop.younesghalloum.dev/sitemap.xml`.
+   If it only says `Disallow: /`, `APP_ENV` in `/opt/baskit/.env` is not `production`. If the addresses inside the
+   sitemap are wrong, fix `APP_URL`. Then run `docker compose up -d` so the containers read the `.env` again.
+2. Open [Google Search Console](https://search.google.com/search-console) and add the domain
+   `younesghalloum.dev`. Google asks for a `TXT` record: add it in Cloudflare (DNS only), then click Verify.
+3. In Search Console, Sitemaps, submit `sitemap.xml`.
+4. Use URL inspection on a product page to see what Google read. Indexing takes days to weeks.
+
 ## Everyday commands
 
 ```bash
@@ -233,6 +252,8 @@ and tables in one release, remove them in a later one.
 | `502 Bad Gateway` from the host Nginx | `docker compose ps`: is `web` healthy? `curl -i http://127.0.0.1:8081/up` |
 | Links or assets use `http://` | `TRUSTED_PROXIES=*` and `APP_URL=https://...` in `.env`, then `docker compose up -d` |
 | Login loops back to the login page | `SESSION_SECURE_COOKIE=true` needs HTTPS and `TRUSTED_PROXIES` set |
+| `robots.txt` says `Disallow: /` | `APP_ENV` is not `production` in `/opt/baskit/.env` (step 12) |
+| Addresses in `sitemap.xml` or the canonical tags are wrong | `APP_URL` must be `https://shop.younesghalloum.dev` |
 | Emails not arriving | step 9: domain verified at Resend? `MAIL_PASSWORD` is the API key? sender on the verified domain? `docker compose logs queue` |
 | `pull access denied` | step 4: log in to GHCR as `deploy`, or make the package public |
 | Product images 404 | the `storage` volume must exist; `docker compose exec app ls storage/app/public` |
