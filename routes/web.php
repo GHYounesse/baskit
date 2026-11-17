@@ -15,17 +15,40 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // Kept for the Breeze auth flows that redirect to the `dashboard` route; customers
 // have no dashboard of their own, so send everyone to where they actually belong.
 Route::get('/dashboard', function (Request $request) {
     return redirect()->route($request->user()->is_admin ? 'admin.dashboard' : 'shop.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Plain files for crawlers: no session, no cookies, no Inertia. They are generated (not static
+// files in public/) so the addresses inside them always follow APP_URL.
+Route::withoutMiddleware([
+    StartSession::class,
+    ShareErrorsFromSession::class,
+    ValidateCsrfToken::class,
+    EncryptCookies::class,
+    AddQueuedCookiesToResponse::class,
+    HandleInertiaRequests::class,
+    AddLinkHeadersForPreloadedAssets::class,
+])->group(function () {
+    Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+    Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+});
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
