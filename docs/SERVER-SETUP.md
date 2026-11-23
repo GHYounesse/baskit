@@ -15,6 +15,42 @@ flowchart LR
     Q[queue and scheduler containers] --> D
 ```
 
+## 0. First connection and a new password
+
+OVH e-mails you a first password for the `ubuntu` user (`debian` on a Debian image). Use it once, then replace it.
+
+Generate a strong new password **on your own computer** (PowerShell) and save it in a password manager right away.
+Never paste it in a chat or commit it:
+
+```powershell
+-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
+```
+
+Connect with `-v` so you can see why if it fails:
+
+```powershell
+ssh -v ubuntu@<IPv4>
+```
+
+1. On the first connection SSH shows the server's fingerprint: type `yes`.
+2. When asked, type the password from the OVH e-mail. Nothing shows on screen while you type; that is normal.
+3. The server may force you to change it at once. If not, change it yourself with `passwd`: enter the e-mail password
+   as the current one, then the new generated password twice.
+
+When you see a prompt like `ubuntu@vps-xxxx:~$`, you are connected. If the connection closes before the password
+prompt, the VPS may still be installing (check its status in the OVH Manager) or the username is wrong; the `-v`
+output says which.
+
+Do not enable the `root` account: the default user already has `sudo`, and a root login is what attackers try
+first. Check that `sudo` works (it must print `root`), then bring the system up to date:
+
+```bash
+sudo whoami
+sudo apt-get update && sudo apt-get upgrade -y
+```
+
+If the upgrade says a reboot is required, run `sudo reboot` and reconnect after a minute.
+
 ## 1. Install Docker Engine and the Compose plugin
 
 From Docker's official apt repository (as a sudo user):
