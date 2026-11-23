@@ -51,6 +51,87 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 If the upgrade says a reboot is required, run `sudo reboot` and reconnect after a minute.
 
+### 0.1 Log in with your own key
+
+Install your personal public key, so you stop typing the server password. From PowerShell on your computer:
+
+```powershell
+type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh ubuntu@<IPv4> "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+```
+
+From now on SSH asks for the **passphrase of your key** (the one you chose when you created it), not the server
+password. To type it only once per session, start the Windows SSH agent (PowerShell as Administrator, once):
+
+```powershell
+Get-Service ssh-agent | Set-Service -StartupType Automatic
+Start-Service ssh-agent
+```
+
+then, in a normal PowerShell: `ssh-add $env:USERPROFILE\.ssh\id_ed25519`.
+
+Test it in a **second** terminal before going on, and keep the first one open.
+
+### 0.2 Change the SSH port (52222)
+
+Bots scan port 22 first. A different port (between 49152 and 65535) is a small extra layer; it does not replace key
+login and a firewall. On Ubuntu 24.04, SSH is started by a systemd *socket* (`ssh.socket`), so editing
+`/etc/ssh/sshd_config` is not enough: the socket decides which ports are open.
+
+```bash
+sudo systemctl edit ssh.socket
+```
+
+Paste this in the editor, then save and exit (`Ctrl + X`, `Y`, `Enter`):
+
+```
+[Socket]
+ListenStream=
+BindIPv6Only=ipv6-only
+ListenStream=0.0.0.0:22
+ListenStream=[::]:22
+ListenStream=0.0.0.0:52222
+ListenStream=[::]:52222
+```
+
+Write the IPv4 (`0.0.0.0`) and IPv6 (`[::]`) addresses explicitly. With only `ListenStream=52222`, the port listens on
+IPv6 alone and your computer, which connects over IPv4, gets `Connection refused`. Port 22 stays open for now so you
+cannot lock yourself out.
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart ssh.socket
+sudo ss -tlnp | grep ssh        # four lines: 0.0.0.0:22, [::]:22, 0.0.0.0:52222, [::]:52222
+```
+
+Test from a second terminal: `ssh -p 52222 ubuntu@<IPv4>`. If it fails, the first session is still open to fix it
+(and the OVH Manager has a KVM console as a last resort).
+
+### 0.3 Firewall
+
+Allow the ports first, then switch it on, so enabling it cannot cut you off:
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 52222/tcp
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+sudo ufw status numbered
+```
+
+Check from a third terminal that `ssh -p 52222 ubuntu@<IPv4>` still works. Port 22 stays allowed until the deploy
+workflow connects on 52222 (step 10). Then close it:
+
+```bash
+sudo ufw delete allow 22/tcp
+sudo systemctl edit ssh.socket   # delete the two ":22" lines, keep the 52222 ones
+sudo systemctl daemon-reload && sudo systemctl restart ssh.socket
+```
+
+Ports 80 and 443 answer only once Nginx is installed (step 6).
+
 ## 1. Install Docker Engine and the Compose plugin
 
 From Docker's official apt repository (as a sudo user):
@@ -86,11 +167,14 @@ sudo usermod -aG docker deploy
 > with an SSH key, and why the key should be used for nothing else. If other apps share this VPS, consider a
 > rootless Docker setup for this user instead.
 
-Create an SSH key pair **on your own computer** (not on the server), dedicated to this deployment:
+Create an SSH key pair **on your own computer** (not on the server), dedicated to this deployment. Do not reuse your
+personal key: the private half goes into a GitHub secret. Create it in your `.ssh` folder, never inside the project:
 
 ```bash
 ssh-keygen -t ed25519 -f baskit-deploy -C "baskit github actions" -N ""
 ```
+
+On Windows PowerShell use `ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\baskit-deploy -C "baskit github actions" -N '""'`.
 
 Install the public key on the server:
 
@@ -224,7 +308,7 @@ Add these secrets to that environment:
 | Secret | Value |
 |---|---|
 | `SSH_PRIVATE_KEY` | contents of `baskit-deploy` (the private key from step 2) |
-| `SSH_KNOWN_HOSTS` | output of `ssh-keyscan -t ed25519 <server-ip-or-hostname>`, run on your computer |
+| `SSH_KNOWN_HOSTS` | output of `ssh-keyscan -t ed25519 <server-ip-or-hostname>`, run on your computer (add `-p 52222` once port 22 is closed) |
 | `SSH_HOST` | the server's hostname or IP |
 | `SSH_USER` | `deploy` |
 
