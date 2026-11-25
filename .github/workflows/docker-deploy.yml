@@ -1,0 +1,63 @@
+
+#
+#   test  ──►  build  ──►  deploy
+#
+# Secrets (Settings > Secrets and variables > Actions; put them on the "production" environment):
+#   SSH_PRIVATE_KEY   private key of the deploy user (ed25519, no passphrase)
+#   SSH_KNOWN_HOSTS   output of: ssh-keyscan -t ed25519 -p 52222 <server-ip-or-hostname>
+#   SSH_HOST          server hostname or IP (SSH listens on port 52222, see "Set up SSH" below)
+#   SSH_USER          the deploy user (not root)
+# GITHUB_TOKEN is provided by GitHub automatically and is used to push the image to GHCR.
+
+name: Docker build and deploy
+
+# The workflow starts when someone pushes to the main branch (including when a pull request is merged)
+# OR when someone clicks the "Run workflow" button in the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Variables
+env:
+  APP_URL: https://shop.younesghalloum.dev
+  DEPLOY_PATH: /opt/baskit
+
+jobs:
+  # ================================================================================================
+  # JOB 1: test. Never ship code whose tests fail
+  # ================================================================================================
+  test:
+    # runs on a fresh Ubuntu, thrown away after the job.
+    runs-on: ubuntu-latest
+    steps:
+      # Download your repository's code onto the runner.
+      - uses: actions/checkout@v4
+
+      # Install PHP 8.3, the same version as production, with the extensions the app needs.
+      # pdo_sqlite is there because the tests use an in-memory SQLite database.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, bcmath, pdo_sqlite
+
+      # Install Node 22 (needed to build the frontend). "cache: npm" keeps downloaded packages
+      # between runs so this step is faster next time.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Install the PHP libraries.
+      - run: composer install --no-interaction --prefer-dist
+      # Laravel refuses to start without an .env file and an APP_KEY, so create throwaway ones.
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+
+      # Some page tests need the compiled frontend (Vite's manifest file), so build it first.
+      - run: npm ci
+      - run: npm run build
+
+      # Run every test. If any fails, this job fails and "build" and "deploy" never start.
+      - name: Run the tests (Pest)
+        run: php artisan test
