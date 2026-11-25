@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Baskit is a Laravel 12 + Inertia v2 + React 18 (plain JSX, no TypeScript) e-commerce app: Stripe checkout (test mode), a rule-based shopping assistant, an admin panel, Docker deployment. SQLite for tests and local dev, PostgreSQL 16 in production. Controllers return Inertia pages; there is no separate API. The README covers features and the assistant, search and inventory design.
+Baskit is a Laravel 12 + Inertia v2 + React 18 (plain JSX, no TypeScript) e-commerce app: Stripe checkout (test mode), a rule-based shopping assistant, an admin panel, Docker deployment. SQLite for tests and local dev, PostgreSQL 16 in production. Controllers return Inertia pages; there is no separate API. The README covers features and setup; `docs/DESIGN.md` covers the assistant, search and inventory design.
 
 ## Rules that always apply
 
@@ -58,7 +58,7 @@ Tests need a `.env` with an `APP_KEY` (`cp .env.example .env && php artisan key:
 
 **Assistant and AI.** The assistant is rule-based (`RuleBasedEngine`) behind the `ConversationEngine` interface bound in `AppServiceProvider`. Separately, `Ai\LlmClient` (`GeminiClient`) powers `ProductDrafter`, which suggests a name, description and category on the admin new-product form. It is on only when `GEMINI_API_KEY` is set; tests use a fake client.
 
-**SEO.** Crawlers do not run JavaScript, so tags are written on the server by `resources/views/partials/seo.blade.php`. Canonical and sitemap addresses come from `APP_URL`, never the request host. `/robots.txt` and `/sitemap.xml` are routes (no session middleware, no static file), and robots blocks everything unless `APP_ENV=production`. See the README's SEO section.
+**SEO.** Crawlers do not run JavaScript, so tags are written on the server by `resources/views/partials/seo.blade.php`. Canonical and sitemap addresses come from `APP_URL`, never the request host. `/robots.txt` and `/sitemap.xml` are routes (no session middleware, no static file), and robots blocks everything unless `APP_ENV=production`. See the SEO section in `docs/DESIGN.md`.
 
 **Routes and frontend.** `/` is the home page (`home`); the catalogue is `/shop` (`shop.index`), so a link meaning "the shop" must not be `/`. Admin routes use the `admin` middleware alias plus policies. Pages take their layout from `Page.layout = ...` and use Ziggy's global `route()`. Tailwind color names (`primary`, `ink`, `surface`, `stroke`, `panel`) map to the CSS variables in `tailwind.config.js`; use them, not hex values. Headings use Baloo 2 (`font-display`), text uses Figtree.
 
