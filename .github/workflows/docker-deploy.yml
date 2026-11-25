@@ -1,0 +1,203 @@
+
+#
+#   test  ──►  build  ──►  deploy
+#
+# Secrets (Settings > Secrets and variables > Actions; put them on the "production" environment):
+#   SSH_PRIVATE_KEY   private key of the deploy user (ed25519, no passphrase)
+#   SSH_KNOWN_HOSTS   output of: ssh-keyscan -t ed25519 -p 52222 <server-ip-or-hostname>
+#   SSH_HOST          server hostname or IP (SSH listens on port 52222, see "Set up SSH" below)
+#   SSH_USER          the deploy user (not root)
+# GITHUB_TOKEN is provided by GitHub automatically and is used to push the image to GHCR.
+
+name: Docker build and deploy
+
+# The workflow starts when someone pushes to the main branch (including when a pull request is merged)
+# OR when someone clicks the "Run workflow" button in the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Variables
+env:
+  APP_URL: https://shop.younesghalloum.dev
+  DEPLOY_PATH: /opt/baskit
+
+jobs:
+  # ================================================================================================
+  # JOB 1: test. Never ship code whose tests fail
+  # ================================================================================================
+  test:
+    # runs on a fresh Ubuntu, thrown away after the job.
+    runs-on: ubuntu-latest
+    steps:
+      # Download your repository's code onto the runner.
+      - uses: actions/checkout@v4
+
+      # Install PHP 8.3, the same version as production, with the extensions the app needs.
+      # pdo_sqlite is there because the tests use an in-memory SQLite database.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, bcmath, pdo_sqlite
+
+      # Install Node 22 (needed to build the frontend). "cache: npm" keeps downloaded packages
+      # between runs so this step is faster next time.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Install the PHP libraries.
+      - run: composer install --no-interaction --prefer-dist
+      # Laravel refuses to start without an .env file and an APP_KEY, so create throwaway ones.
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+
+      # Some page tests need the compiled frontend (Vite's manifest file), so build it first.
+      - run: npm ci
+      - run: npm run build
+
+      # Run every test. If any fails, this job fails and "build" and "deploy" never start.
+      - name: Run the tests (Pest)
+        run: php artisan test
+
+  # ================================================================================================
+  # JOB 2: build. Make the Docker image and publish it to GitHub's registry (GHCR)
+  # ================================================================================================
+  build:
+    # Only starts if "test" succeeded.
+    needs: test
+    runs-on: ubuntu-latest
+    # The minimum rights the automatic token gets: read the code, and write packages (the image).
+    permissions:
+      contents: read
+      packages: write
+    # Pass a value to later jobs: here, the image name computed below.
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Compute the image name, e.g. ghcr.io/ghyounesse/baskit.
+      # ">> $GITHUB_OUTPUT" stores the result so other steps can read it as steps.name.outputs.image.
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/baskit" >> "$GITHUB_OUTPUT"
+
+      # Set up Buildx, Docker's modern builder (needed for the build cache used below).
+      - uses: docker/setup-buildx-action@v3
+
+      # Log in to GHCR (GitHub's Docker registry) so we are allowed to push. The password is the
+      # temporary token GitHub generates for this run.
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build the image from the Dockerfile and push it.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # Two tags on the same image. The git commit SHA is unique to this version, which is what
+          # the server deploys (and can roll back to). "latest" is a convenient moving pointer.
+          tags: |
+            ${{ steps.name.outputs.image }}:${{ github.sha }}
+            ${{ steps.name.outputs.image }}:latest
+          # Reuse Docker layers from the previous run (stored in GitHub's cache) so builds are
+          # fast when only a little code changed. "mode=max" caches the intermediate stages too.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ================================================================================================
+  # JOB 3: deploy. Put the new image on the server and check that it works
+  # ================================================================================================
+  deploy:
+    # Only starts if "build" succeeded.
+    needs: build
+    runs-on: ubuntu-latest
+    # Ties this job to the "production" environment, where you stored the secrets. You can also
+    # require a manual approval on that environment before this job is allowed to run.
+    environment: production
+    # Two deploys must never run at the same time. A newer one waits for the running one to finish
+    # (cancel-in-progress: false means it does not cancel it halfway, which could leave a mess).
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    # Secrets are copied into environment variables here, and the steps below read them as $NAME.
+    # Never write ${{ secrets.X }} directly inside a shell command: GitHub would paste its value
+    # into the script text. Going through env variables is the safer habit.
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      # The version to deploy: the image tagged with this commit's SHA, built in the job above.
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      # Needed to get compose.yaml, deploy.sh and the Nginx config, which are copied to the server.
+      - uses: actions/checkout@v4
+
+      # Prepare the runner so it can log in to your server over SSH.
+      - name: Set up SSH
+        run: |
+          # Create the ~/.ssh folder, readable only by the current user.
+          install -m 700 -d ~/.ssh
+          # Write the private key to a file. SSH refuses keys that other users can read, hence chmod 600.
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # known_hosts lists the servers we trust. Storing your server's fingerprint here means SSH
+          # will refuse to connect if someone impersonates your server (a "man in the middle").
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          # The VPS accepts SSH on port 52222 (port 22 gets closed). ssh and scp read the port from this file,
+          # and the entry in SSH_KNOWN_HOSTS must be the one for that port (ssh-keyscan -p 52222).
+          printf 'Host %s\n  Port 52222\n' "$SSH_HOST" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      # Keep the compose file, Nginx config and deploy script on the server in step with git.
+      # The server's .env is never touched.
+      - name: Copy deployment files
+        run: |
+          # Make sure the target folder exists on the server.
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p '$DEPLOY_PATH/docker/nginx'"
+          # scp copies files over SSH: the compose file and the deploy script...
+          scp compose.yaml deploy.sh "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+          # ...and the Nginx config used by the "web" container.
+          scp docker/nginx/default.conf "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker/nginx/default.conf"
+          # Make the script executable.
+          ssh "$SSH_USER@$SSH_HOST" "chmod +x '$DEPLOY_PATH/deploy.sh'"
+
+      # Run deploy.sh ON THE SERVER with the new image tag. It pulls the image, restarts the
+      # containers, runs the database migrations and checks the app locally. It rolls back by
+      # itself if a migration or that local check fails.
+      - name: Deploy
+        run: ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && ./deploy.sh deploy '$IMAGE_TAG'"
+
+      # Final check from outside: ask the real public URL, like a visitor would. This goes through
+      # the host Nginx and HTTPS, which deploy.sh's own local check does not cover.
+      - name: Smoke test
+        # "id" lets a later step ask whether this step failed (steps.smoke.outcome).
+        id: smoke
+        run: |
+          # Try up to 15 times, 4 seconds apart: the app may need a moment to answer.
+          for i in $(seq 1 15); do
+            # curl flags: -f fail on HTTP errors, -sS quiet but show errors, -o /dev/null drop the body.
+            if curl -fsS --max-time 10 -o /dev/null "$APP_URL/up"; then
+              echo "OK: $APP_URL/up"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 4
+          done
+          # 15 failures in a row: mark the step as failed.
+          exit 1
+
+      # deploy.sh already rolls back by itself when migrations or its local health check fail
+      # (that step then fails and this one is skipped). This covers the remaining case: the app
+      # is healthy locally but unreachable through the host Nginx / HTTPS.
+      - name: Roll back
+        # Runs only if something failed AND the failing step was the smoke test.
+        if: failure() && steps.smoke.outcome == 'failure'
+        run: ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && ./deploy.sh rollback"
