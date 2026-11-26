@@ -2,6 +2,7 @@
 
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Artisan;
 
@@ -13,6 +14,15 @@ it('seeds a complete demo shop and keeps stock in step with its history', functi
         ->and(Product::where('stock', 0)->exists())->toBeTrue();
 
     expect(Artisan::call('inventory:verify'))->toBe(0);
+});
+
+it('gives the demo customer orders in every state', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    $customer = User::where('email', 'customer@example.com')->first();
+
+    expect($customer->orders()->pluck('status')->unique()->all())
+        ->toContain('paid', 'shipped', 'delivered', 'cancelled', 'refunded');
 });
 
 it('can be seeded twice without duplicating or overwriting anything', function () {
