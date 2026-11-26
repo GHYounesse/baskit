@@ -106,6 +106,13 @@ function LowStock({ products }) {
           ))}
         </ul>
       )}
+
+      <Link
+        href="/admin/inventory"
+        className={`mt-3 inline-block rounded text-sm font-medium text-primary hover:text-primary-hover ${focusRing}`}
+      >
+        See the inventory log
+      </Link>
     </section>
   );
 }
@@ -113,7 +120,12 @@ function LowStock({ products }) {
 function RecentOrders({ orders }) {
   return (
     <section>
-      <h2 className="mb-3 font-display text-lg font-bold text-ink">Recent orders</h2>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-lg font-bold text-ink">Recent orders</h2>
+        <Link href="/admin/orders" className={`rounded text-sm font-medium text-primary hover:text-primary-hover ${focusRing}`}>
+          All orders
+        </Link>
+      </div>
 
       {orders.length === 0 ? (
         <p className="text-sm text-ink-muted">No orders yet.</p>
@@ -132,7 +144,14 @@ function RecentOrders({ orders }) {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
-                  <td className="p-3 text-ink">#{order.id}</td>
+                  <td className="p-3">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className={`rounded font-medium text-primary hover:text-primary-hover ${focusRing}`}
+                    >
+                      #{order.id}
+                    </Link>
+                  </td>
                   <td className="p-3 text-ink-muted">{order.user?.name ?? '—'}</td>
                   <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
                   <td className="p-3">
