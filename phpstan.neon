@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    # Known findings in older code. New code must not add to it: fix an entry, then regenerate with
+    # `./vendor/bin/phpstan analyse --generate-baseline`.
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - database/seeders
+        - routes
+    level: 5
