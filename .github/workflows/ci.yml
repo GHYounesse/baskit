@@ -26,8 +26,11 @@ jobs:
       - name: Check code style
         run: ./vendor/bin/pint --test
 
+      - name: Static analysis
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
       - name: Run tests
-        run: php artisan test
+        run: php artisan test --parallel
 
   frontend:
     runs-on: ubuntu-latest
@@ -39,4 +42,33 @@ jobs:
           node-version: '20'
 
       - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:unit
+
       - run: npm run build
+
+  # Dependency advisories can appear overnight with no change of ours, so this reports
+  # them without failing the pull request.
+  security:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer audit --locked
+
+      - run: npm ci
+      - run: npm audit --audit-level=high
