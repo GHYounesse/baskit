@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class ReviewSeeder extends Seeder
 {
@@ -56,7 +58,7 @@ class ReviewSeeder extends Seeder
         }
 
         $customers = User::where('is_admin', false)->get();
-        $products = Product::where('is_active', true)->inRandomOrder()->limit(30)->get();
+        $products = Product::where('is_active', true)->inRandomOrder()->limit(40)->get();
 
         if ($customers->isEmpty() || $products->isEmpty()) {
             return;
@@ -78,7 +80,7 @@ class ReviewSeeder extends Seeder
                     'status' => 'delivered',
                     'total_cents' => $product->price_cents,
                     'tracking_carrier' => 'UPS',
-                    'tracking_number' => '1Z'.strtoupper(fake()->bothify('??########')),
+                    'tracking_number' => '1Z'.strtoupper(Str::random(10)),
                     'shipped_at' => $shippedAt,
                     'delivered_at' => $deliveredAt,
                     'created_at' => $when,
@@ -101,7 +103,7 @@ class ReviewSeeder extends Seeder
                     'product_id' => $product->id,
                     'user_id' => $user->id,
                     'rating' => $rating,
-                    'body' => fake()->randomElement(self::COMMENTS[$rating]),
+                    'body' => Arr::random(self::COMMENTS[$rating]),
                     // The review comes a few days after the order.
                     'created_at' => $when->copy()->addDays(random_int(2, 7)),
                     'updated_at' => $when->copy()->addDays(random_int(2, 7)),
