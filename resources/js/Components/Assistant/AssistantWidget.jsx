@@ -303,7 +303,9 @@ export default function AssistantWidget() {
   // Elsewhere on the page (the home hero) a button can ask the assistant a question. The ref keeps
   // the listener pointing at the latest send, so it is added once rather than on every render.
   const sendRef = useRef(send);
-  sendRef.current = send;
+  useEffect(() => {
+    sendRef.current = send;
+  });
 
   useEffect(() => {
     const ask = (event) => {
