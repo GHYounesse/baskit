@@ -39,6 +39,8 @@ class HandleInertiaRequests extends Middleware
             'assistant' => [
                 'enabled' => (bool) config('assistant.enabled'),
             ],
+            // Set only on a demo site, so its banner can show the test card and demo logins.
+            'demo' => config('demo.enabled') ? config('demo.banner') : null,
             // The default SEO of every page
             'seo' => PageSeo::hidden()->toArray(),
             'flash' => [
