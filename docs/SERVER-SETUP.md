@@ -330,7 +330,16 @@ docker compose exec app php artisan tinker
 # > \App\Models\User::create(['name' => 'Admin', 'email' => 'you@example.com', 'password' => '<strong password>', 'is_admin' => true, 'email_verified_at' => now()]);
 ```
 
-(The demo seeders need Faker, a dev dependency that is not in the production image.)
+To fill the shop with the demo catalogue (50 products, variants, coupons, reviews and two demo logins), run the seeders.
+They need no Faker, are safe to run twice, and never overwrite existing products:
+
+```bash
+docker compose exec app php artisan db:seed --force
+```
+
+Product photos live in `database/seeders/images/`, named after the product slug (`wireless-headphones.jpg`), and are baked
+into the image, so deploy after adding them. To wipe and reseed the demo every night, set `DEMO_MODE=true` in the server
+`.env`. Never set it on a site with real data: `php artisan demo:reset` drops every table.
 
 ## 12. Let Google find the shop
 
