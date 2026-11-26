@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\SummarizeProductReviews;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +21,18 @@ class Review extends Model
     protected $hidden = ['user'];
 
     protected $appends = ['author'];
+
+    protected static function booted(): void
+    {
+        $refresh = function (Review $review) {
+            if (config('ai.enabled')) {
+                SummarizeProductReviews::dispatch($review->product_id)->delay(now()->addMinute())->afterCommit();
+            }
+        };
+
+        static::saved($refresh);
+        static::deleted($refresh);
+    }
 
     public function product()
     {
