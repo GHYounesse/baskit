@@ -11,6 +11,11 @@ Artisan::command('inspire', function () {
 
 Schedule::command('carts:prune-guests')->daily();
 
+// A public demo collects visitor orders and edits, so it resets nightly. Off unless DEMO_MODE=true.
+Schedule::command('demo:reset')
+    ->dailyAt(config('demo.reset_at'))
+    ->when(fn () => config('demo.enabled'));
+
 // A daily check that every product's stock still matches its history. A mismatch
 // means stock was changed outside the app, so it is logged where someone will see it.
 Schedule::command('inventory:verify')
