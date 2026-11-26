@@ -85,4 +85,89 @@ class ReviewSummaryTest extends TestCase
         $this->assertNull($product->fresh()->review_summary);
         $this->assertSame([], $this->prompts);
     }
+
+    public function test_an_unchanged_set_of_reviews_does_not_call_the_model_again(): void
+    {
+        $this->fakeLlm('Customers like it.');
+        $product = $this->productWithReviews(3);
+        $summarizer = app(ReviewSummarizer::class);
+
+        $summarizer->refresh($product);
+        $again = $summarizer->refresh($product->fresh());
+
+        $this->assertFalse($again);
+        $this->assertCount(1, $this->prompts);
+    }
+
+    public function test_a_new_review_makes_it_write_the_summary_again(): void
+    {
+        $this->fakeLlm('First version.');
+        $product = $this->productWithReviews(3);
+        app(ReviewSummarizer::class)->refresh($product);
+
+        Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id, 'rating' => 4, 'body' => 'A fourth opinion.']);
+        $this->fakeLlm('Second version.');
+        app(ReviewSummarizer::class)->refresh($product->fresh());
+
+        $this->assertSame('Second version.', $product->fresh()->review_summary);
+    }
+
+    public function test_the_reply_is_reduced_to_plain_text(): void
+    {
+        $this->fakeLlm("**Great** <script>alert(1)</script> value, see https://evil.example now.\n- and sturdy");
+        $product = $this->productWithReviews(3);
+
+        app(ReviewSummarizer::class)->refresh($product);
+
+        $summary = $product->fresh()->review_summary;
+        $this->assertStringNotContainsString('<', $summary);
+        $this->assertStringNotContainsString('http', $summary);
+        $this->assertStringNotContainsString('*', $summary);
+    }
+
+    public function test_a_failing_model_keeps_the_old_summary(): void
+    {
+        $this->fakeLlm('Original summary.');
+        $product = $this->productWithReviews(3);
+        app(ReviewSummarizer::class)->refresh($product);
+
+        Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id, 'rating' => 2, 'body' => 'Changed my mind.']);
+        $this->fakeLlm(new LlmException('down'));
+
+        try {
+            app(ReviewSummarizer::class)->refresh($product->fresh());
+            $this->fail('Expected the model error to surface so the job can retry.');
+        } catch (LlmException) {
+            // expected
+        }
+
+        $this->assertSame('Original summary.', $product->fresh()->review_summary);
+    }
+
+    public function test_the_summary_is_sent_to_the_product_page_but_not_leaked_elsewhere(): void
+    {
+        $this->fakeLlm('Customers like it.');
+        $product = $this->productWithReviews(3);
+        app(ReviewSummarizer::class)->refresh($product);
+
+        $this->get("/products/{$product->slug}")
+            ->assertInertia(fn ($page) => $page
+                ->where('reviewSummary', 'Customers like it.')
+                ->missing('product.review_summary'));
+    }
+
+    public function test_reviews_queue_a_rewrite_only_when_ai_is_on(): void
+    {
+        Queue::fake();
+        $product = Product::factory()->create(['category_id' => null]);
+        $user = User::factory()->create();
+
+        config(['ai.enabled' => false]);
+        Review::create(['product_id' => $product->id, 'user_id' => $user->id, 'rating' => 5, 'body' => 'Nice.']);
+        Queue::assertNothingPushed();
+
+        config(['ai.enabled' => true]);
+        Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id, 'rating' => 5, 'body' => 'Nice too.']);
+        Queue::assertPushed(SummarizeProductReviews::class, fn ($job) => $job->productId === $product->id);
+    }
 }
