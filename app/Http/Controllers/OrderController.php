@@ -15,7 +15,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Orders/Index', [
-            'orders' => $request->user()->orders()->with('items')->latest()->get(),
+            'orders' => $request->user()->orders()->with('items.product:id,slug,image_path')->latest()->get(),
         ]);
     }
 
@@ -24,7 +24,7 @@ class OrderController extends Controller
         $this->authorize('view', $order); // see Policy note below
 
         return Inertia::render('Orders/Show', [
-            'order' => $order->load('items'),
+            'order' => $order->load('items.product:id,slug,image_path'),
             'timeline' => $order->timeline(),
             'canCancel' => $order->canBeCancelledByCustomer() && $request->user()->can('cancel', $order),
         ]);

@@ -23,6 +23,16 @@ class OrderItem extends Model
     }
 
     /**
+     * The product this line was bought from; null once that product has been deleted.
+     *
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
      * @return BelongsTo<ProductVariant, $this>
      */
     public function variant(): BelongsTo
