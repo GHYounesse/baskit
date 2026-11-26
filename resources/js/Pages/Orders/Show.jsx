@@ -62,6 +62,15 @@ function OrderLine({ item }) {
   );
 }
 
+// "MA" -> "Morocco"; an unknown code is shown as it is.
+function countryName(code) {
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 export default function Show({ order, timeline, canCancel }) {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -176,7 +185,7 @@ export default function Show({ order, timeline, canCancel }) {
                     .filter(Boolean)
                     .join(', ')}
                 </div>
-                <div>{order.shipping_address.country}</div>
+                <div>{countryName(order.shipping_address.country)}</div>
               </div>
             </div>
           )}
