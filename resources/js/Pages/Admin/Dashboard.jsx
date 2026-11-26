@@ -10,6 +10,15 @@ import { Head, Link } from '@inertiajs/react';
 
 const focusRing = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
+function BasketIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+      <path d="M4 9h16l-1.5 10.5a2 2 0 01-2 1.5H7.5a2 2 0 01-2-1.5L4 9z" strokeLinejoin="round" />
+      <path d="M8 9V7a4 4 0 018 0v2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // The things an admin has to act on today, each one a link to where they do it.
 function Attention({ attention }) {
   const items = [
@@ -51,15 +60,6 @@ function Attention({ attention }) {
         </Link>
       ))}
     </div>
-  );
-}
-
-function BasketIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
-      <path d="M4 9h16l-1.5 10.5a2 2 0 01-2 1.5H7.5a2 2 0 01-2-1.5L4 9z" strokeLinejoin="round" />
-      <path d="M8 9V7a4 4 0 018 0v2" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -110,12 +110,42 @@ function LowStock({ products }) {
   );
 }
 
-function Section({ title, children }) {
+function RecentOrders({ orders }) {
   return (
-    <div>
-      <h3 className="mb-3 font-medium text-ink">{title}</h3>
-      {children}
-    </div>
+    <section>
+      <h2 className="mb-3 font-display text-lg font-bold text-ink">Recent orders</h2>
+
+      {orders.length === 0 ? (
+        <p className="text-sm text-ink-muted">No orders yet.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-stroke bg-surface">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="border-b border-stroke text-left text-ink-muted">
+                <th className="p-3 font-medium">Order</th>
+                <th className="p-3 font-medium">Customer</th>
+                <th className="p-3 text-right font-medium">Total</th>
+                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium">Placed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
+                  <td className="p-3 text-ink">#{order.id}</td>
+                  <td className="p-3 text-ink-muted">{order.user?.name ?? '—'}</td>
+                  <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
+                  <td className="p-3">
+                    <OrderStatusBadge status={order.status} />
+                  </td>
+                  <td className="p-3 text-ink-muted">{formatDate(order.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -126,10 +156,10 @@ export default function Dashboard({ attention, trend, lowStockProducts, recentOr
   return (
     <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
-        <div className="mx-auto max-w-5xl space-y-8 px-6 py-8">
+        <div className="mx-auto max-w-6xl space-y-8 px-6 py-8">
           <Head title="Admin dashboard" />
 
-          <PageHeader title="Admin dashboard" />
+          <PageHeader title="Admin dashboard" description="How the shop is doing, and what needs you today." />
 
           <Attention attention={attention} />
 
@@ -187,36 +217,7 @@ export default function Dashboard({ attention, trend, lowStockProducts, recentOr
             <LowStock products={lowStockProducts} />
           </div>
 
-          <Section title="Recent orders">
-            {recentOrders.length === 0 ? (
-              <p className="text-sm text-ink-muted">No orders yet.</p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-stroke bg-surface">
-                <table className="w-full min-w-[560px] text-sm">
-                  <thead>
-                    <tr className="border-b border-stroke text-left text-ink-muted">
-                      <th className="p-3 font-medium">Order</th>
-                      <th className="p-3 font-medium">Customer</th>
-                      <th className="p-3 font-medium text-right">Total</th>
-                      <th className="p-3 font-medium">Status</th>
-                      <th className="p-3 font-medium">Placed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr key={order.id} className="border-b border-stroke last:border-b-0 hover:bg-primary-light/30">
-                        <td className="p-3 text-ink">#{order.id}</td>
-                        <td className="p-3 text-ink-muted">{order.user?.name ?? '—'}</td>
-                        <td className="p-3 text-right font-medium text-ink">{formatMoney(order.total_cents)}</td>
-                        <td className="p-3"><OrderStatusBadge status={order.status} /></td>
-                        <td className="p-3 text-ink-muted">{formatDate(order.created_at)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Section>
+          <RecentOrders orders={recentOrders} />
         </div>
       </div>
     </AuthenticatedLayout>
