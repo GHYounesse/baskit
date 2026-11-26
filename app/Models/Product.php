@@ -22,6 +22,12 @@ class Product extends Model
     protected $appends = ['image_url'];
 
     /**
+     * The review summary is sent to the product page as its own prop, so it
+     * stays out of every other JSON a product appears in (cards, search, cart).
+     */
+    protected $hidden = ['review_summary', 'review_summary_hash', 'review_summary_at'];
+
+    /**
      * Optional explanation for a stock change made through a plain save();
      * recorded with the ledger entry. Not a database column.
      */
