@@ -1,9 +1,12 @@
-import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import PageHeader from '@/Components/PageHeader';
+import ChartCard, { DataTable } from '@/Components/Charts/ChartCard';
+import RevenueChart from '@/Components/Charts/RevenueChart';
+import StatTile from '@/Components/Charts/StatTile';
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
-import { formatDate } from '@/utils/date';
-import { formatMoney } from '@/utils/money';
+import PageHeader from '@/Components/PageHeader';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatDate, formatDay } from '@/utils/date';
+import { formatMoney, formatMoneyWhole, formatNumber } from '@/utils/money';
+import { Head, Link } from '@inertiajs/react';
 
 const focusRing = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
@@ -51,15 +54,6 @@ function Attention({ attention }) {
   );
 }
 
-function StatCard({ label, value }) {
-  return (
-    <div className="rounded-lg border border-stroke bg-surface p-4">
-      <div className="text-sm text-ink-muted">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-ink">{value}</div>
-    </div>
-  );
-}
-
 function Section({ title, children }) {
   return (
     <div>
@@ -69,7 +63,10 @@ function Section({ title, children }) {
   );
 }
 
-export default function Dashboard({ stats, attention, lowStockProducts, recentOrders }) {
+export default function Dashboard({ attention, trend, lowStockProducts, recentOrders }) {
+  const { current, previous } = trend.kpis;
+  const comparedTo = `previous ${trend.days} days`;
+
   return (
     <AuthenticatedLayout>
       <div className="bg-canvas text-ink">
@@ -80,12 +77,55 @@ export default function Dashboard({ stats, attention, lowStockProducts, recentOr
 
           <Attention attention={attention} />
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard label="Revenue" value={formatMoney(stats.revenue_cents)} />
-            <StatCard label="Orders" value={stats.order_count} />
-            <StatCard label="Products" value={stats.product_count} />
-            <StatCard label="Low stock" value={stats.low_stock_count} />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatTile
+              hero
+              label={`Revenue, last ${trend.days} days`}
+              value={formatMoneyWhole(current.revenue_cents)}
+              current={current.revenue_cents}
+              previous={previous.revenue_cents}
+              comparedTo={comparedTo}
+            />
+            <StatTile
+              label="Orders placed"
+              value={formatNumber(current.orders)}
+              current={current.orders}
+              previous={previous.orders}
+              comparedTo={comparedTo}
+            />
+            <StatTile
+              label="Average order"
+              value={formatMoney(current.average_order_cents)}
+              current={current.average_order_cents}
+              previous={previous.average_order_cents}
+              comparedTo={comparedTo}
+            />
           </div>
+
+            <ChartCard
+              title="Revenue by day"
+              subtitle={`The last ${trend.days} days, against the ${trend.days} before`}
+              table={
+                <DataTable
+                  caption="Revenue and orders for each day"
+                  columns={[
+                    { key: 'date', label: 'Date' },
+                    { key: 'revenue', label: 'Revenue', numeric: true },
+                    { key: 'orders', label: 'Orders', numeric: true },
+                    { key: 'previous', label: 'Previous period', numeric: true },
+                  ]}
+                  rows={[...trend.revenueSeries].reverse().map((d) => ({
+                    date: formatDay(d.date, { year: true }),
+                    revenue: formatMoney(d.revenue_cents),
+                    orders: formatNumber(d.orders),
+                    previous: formatMoney(d.previous_revenue_cents),
+                  }))}
+                />
+              }
+            >
+              <RevenueChart series={trend.revenueSeries} />
+            </ChartCard>
+
 
           <Section title="Low stock products">
             {lowStockProducts.length === 0 ? (
