@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -54,12 +56,18 @@ class User extends Authenticatable
         return (bool) $this->is_admin;
     }
 
-    public function orders()
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    public function wishlist()
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function wishlist(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'wishlist_items')->withTimestamps();
     }

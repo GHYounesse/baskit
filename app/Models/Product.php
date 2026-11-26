@@ -7,9 +7,15 @@ use App\Services\Search\ProductSearch;
 use App\Services\Search\StoreSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property-read float|null $reviews_avg_rating Set by withAvg('reviews', 'rating').
+ * @property-read int|null $reviews_count Set by withCount('reviews').
+ */
 class Product extends Model
 {
     use HasFactory;
@@ -67,7 +73,10 @@ class Product extends Model
         });
     }
 
-    public function category()
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -76,7 +85,7 @@ class Product extends Model
      * The product's variants (sizes, colours), in the order the admin set.
      * A product with none is sold as a single item and holds its own stock.
      */
-    public function variants()
+    public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('position')->orderBy('id');
     }
@@ -86,12 +95,18 @@ class Product extends Model
         return $this->relationLoaded('variants') ? $this->variants->isNotEmpty() : $this->variants()->exists();
     }
 
-    public function stockMovements()
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
     }
 
-    public function reviews()
+    /**
+     * @return HasMany<Review, $this>
+     */
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
