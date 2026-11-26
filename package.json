@@ -5,6 +5,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "lint": "eslint resources/js",
+    "test:unit": "vitest run",
     "test:e2e": "vite build && playwright test",
     "test:e2e:ui": "vite build && playwright test --ui"
   },
