@@ -4,17 +4,17 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Safe to run repeatedly: a category is matched by its slug and never
+     * overwritten.
      */
     public function run(): void
     {
-        foreach (['Electronics', 'Clothing', 'Home & Kitchen', 'Books', 'Toys'] as $name) {
-            Category::create(['name' => $name, 'slug' => Str::slug($name)]);
+        foreach (require database_path('seeders/data/catalogue.php') as $slug => $category) {
+            Category::firstOrCreate(['slug' => $slug], ['name' => $category['name']]);
         }
     }
 }
