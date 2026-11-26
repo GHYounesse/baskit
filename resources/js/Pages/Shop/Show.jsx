@@ -106,7 +106,7 @@ function QuantityStepper({ value, max, onChange, disabled }) {
   );
 }
 
-export default function Show({ product, related = [], ratings, reviews, myReview, canReview }) {
+export default function Show({ product, related = [], ratings, reviewSummary, reviews, myReview, canReview }) {
   const outOfStock = product.stock <= 0;
 
   // Sizes and colours: nothing can be added until each option is chosen.
@@ -282,6 +282,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
         <ProductReviews
           product={product}
           ratings={ratings}
+          reviewSummary={reviewSummary}
           reviews={reviews}
           myReview={myReview}
           canReview={canReview}

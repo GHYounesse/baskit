@@ -41,6 +41,17 @@ function RatingSummary({ ratings }) {
   );
 }
 
+// Written by a model from the reviews below, so say so: shoppers should know it is a digest, not a review.
+function ReviewSummary({ summary }) {
+  return (
+    <div className="border-l-2 border-primary pl-4">
+      <h3 className="font-display text-base font-bold text-ink">What customers say</h3>
+      <p className="mt-1 text-sm leading-relaxed text-ink">{summary}</p>
+      <p className="mt-2 text-xs text-ink-muted">Summarised by AI from the written reviews.</p>
+    </div>
+  );
+}
+
 function ReviewForm({ product, review, onDone }) {
   const editing = Boolean(review);
   const { data, setData, post, patch, processing, errors, reset } = useForm({
@@ -151,7 +162,7 @@ function ReviewItem({ review, mine = false, onEdit, onDelete }) {
  * Rating summary, the signed-in customer's own review (or the form to write
  * one) and everyone else's reviews.
  */
-export default function ProductReviews({ product, ratings, reviews, myReview, canReview }) {
+export default function ProductReviews({ product, ratings, reviewSummary, reviews, myReview, canReview }) {
   const { auth } = usePage().props;
   const [editing, setEditing] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -204,6 +215,7 @@ export default function ProductReviews({ product, ratings, reviews, myReview, ca
           ) : (
             <RatingSummary ratings={ratings} />
           )}
+          {reviewSummary && <ReviewSummary summary={reviewSummary} />}
           {action}
         </div>
 
