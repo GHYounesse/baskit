@@ -136,6 +136,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 ## Roadmap
 
 - Brand styling and dark mode for the profile pages
+- Several photos per product, with an image gallery on the product page
 - A browser-driven test of the full payment flow
 - Search and sort on the admin order and product tables
 
