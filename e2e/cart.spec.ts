@@ -44,6 +44,6 @@ test.describe('cart', () => {
     await page.goto('/cart');
 
     await expect(page.getByRole('link', { name: LAMP.name })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Checkout', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Go to checkout', exact: true })).toBeVisible();
   });
 });

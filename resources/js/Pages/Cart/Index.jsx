@@ -1,3 +1,4 @@
+import CheckoutSteps from '@/Components/CheckoutSteps';
 import PageHeader from '@/Components/PageHeader';
 import ProductCard from '@/Components/ProductCard';
 import ShopLayout from '@/Layouts/ShopLayout';
@@ -47,10 +48,10 @@ function CartRow({ item }) {
   const lineTotal = item.quantity * item.product.price_cents;
 
   return (
-    <div className="flex items-center gap-4 border-b border-stroke py-4 last:border-b-0">
+    <div className="flex items-start gap-4 border-b border-stroke py-5 last:border-b-0">
       <Link
         href={`/products/${item.product.slug}`}
-        className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-canvas"
+        className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-canvas sm:h-24 sm:w-24"
       >
         {item.product.image_url ? (
           <img src={item.product.image_url} alt={item.product.name} className="h-full w-full object-cover" />
@@ -79,7 +80,7 @@ function CartRow({ item }) {
         </div>
       </div>
 
-      <div className="shrink-0 font-semibold text-ink">{formatMoney(lineTotal)}</div>
+      <div className="shrink-0 font-display text-lg font-bold text-ink">{formatMoney(lineTotal)}</div>
     </div>
   );
 }
@@ -201,20 +202,30 @@ export default function Index({ cart, pricing, suggestions = [] }) {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <Head title="Your cart" />
 
+        {cart.items.length > 0 && <CheckoutSteps current={1} />}
+
         <PageHeader title="Your cart" />
 
         {cart.items.length === 0 ? (
           <EmptyCart suggestions={suggestions} loggedIn={Boolean(auth.user)} />
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="rounded-lg border border-stroke bg-surface px-4 lg:col-span-2">
-              {cart.items.map((item) => (
-                <CartRow key={item.id} item={item} />
-              ))}
+            <div className="lg:col-span-2">
+              <div className="rounded-lg border border-stroke bg-surface px-4">
+                {cart.items.map((item) => (
+                  <CartRow key={item.id} item={item} />
+                ))}
+              </div>
+              <Link
+                href="/shop"
+                className="mt-4 inline-block rounded text-sm font-medium text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Continue shopping
+              </Link>
             </div>
 
-            <div className="h-fit rounded-lg border border-stroke bg-surface p-4">
-              <div className="font-medium text-ink">Order summary</div>
+            <div className="h-fit rounded-lg border border-stroke bg-surface p-4 lg:sticky lg:top-6">
+              <div className="font-display text-lg font-bold text-ink">Order summary</div>
               <div className="mt-3 flex items-center justify-between text-sm text-ink-muted">
                 <span>Subtotal</span>
                 <span>{formatMoney(pricing.subtotal_cents)}</span>
@@ -234,8 +245,11 @@ export default function Index({ cart, pricing, suggestions = [] }) {
                 href="/checkout"
                 className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
               >
-                {auth.user ? 'Checkout' : 'Log in to checkout'}
+                {auth.user ? 'Go to checkout' : 'Log in to checkout'}
               </Link>
+              <p className="mt-3 text-center text-xs text-ink-muted">
+                Cancel any time before it ships. The refund goes back to your card.
+              </p>
             </div>
           </div>
         )}
