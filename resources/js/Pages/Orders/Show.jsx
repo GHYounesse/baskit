@@ -8,6 +8,60 @@ import { formatMoney } from '@/utils/money';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
+function BasketIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+      <path d="M4 9h16l-1.5 10.5a2 2 0 01-2 1.5H7.5a2 2 0 01-2-1.5L4 9z" strokeLinejoin="round" />
+      <path d="M8 9V7a4 4 0 018 0v2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// One line of the order: the photo and name link back to the product while it still exists.
+function OrderLine({ item }) {
+  const product = item.product;
+
+  const photo = product?.image_url ? (
+    <img src={product.image_url} alt="" className="h-full w-full object-cover" />
+  ) : (
+    <span className="flex h-full w-full items-center justify-center text-ink-muted/40">
+      <BasketIcon className="h-6 w-6" />
+    </span>
+  );
+
+  return (
+    <li className="flex items-center gap-4 py-4">
+      {product ? (
+        <Link
+          href={`/products/${product.slug}`}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-canvas"
+        >
+          {photo}
+        </Link>
+      ) : (
+        <span className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-canvas">{photo}</span>
+      )}
+
+      <div className="min-w-0 flex-1">
+        {product ? (
+          <Link href={`/products/${product.slug}`} className="block font-medium text-ink hover:text-primary">
+            {item.display_name}
+          </Link>
+        ) : (
+          <span className="block font-medium text-ink">{item.display_name}</span>
+        )}
+        <div className="text-sm text-ink-muted">
+          {formatMoney(item.unit_price_cents)} × {item.quantity}
+        </div>
+      </div>
+
+      <div className="shrink-0 font-semibold text-ink">{formatMoney(item.unit_price_cents * item.quantity)}</div>
+    </li>
+  );
+}
+
 export default function Show({ order, timeline, canCancel }) {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -54,18 +108,11 @@ export default function Show({ order, timeline, canCancel }) {
               </div>
             </div>
 
-            <div className="mt-6 space-y-2 border-t border-stroke pt-4">
+            <ul className="mt-6 divide-y divide-stroke border-t border-stroke">
               {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between gap-3 text-sm">
-                  <span className="text-ink-muted">
-                    {item.display_name} <span className="text-ink-muted/70">× {item.quantity}</span>
-                  </span>
-                  <span className="shrink-0 text-ink">
-                    {formatMoney(item.unit_price_cents * item.quantity)}
-                  </span>
-                </div>
+                <OrderLine key={item.id} item={item} />
               ))}
-            </div>
+            </ul>
 
             {order.discount_cents > 0 && (
               <div className="mt-3 space-y-2 border-t border-stroke pt-3 text-sm">
