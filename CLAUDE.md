@@ -19,7 +19,12 @@ composer setup              # first install: deps, .env, key, migrate, npm insta
 composer dev                # php artisan serve + queue:listen + pail + vite, together
 npm run build               # production frontend build (public/build)
 
-./vendor/bin/pint           # code style
+composer check              # the fast loop: pint, phpstan, tests in parallel, eslint, vitest (about 90s)
+composer check:full         # check + dependency audits + Playwright
+composer lint / analyse / security   # pieces of it: pint --test, phpstan, composer + npm audit
+npm run lint / test:unit    # eslint, vitest (utils/money.test.js)
+
+./vendor/bin/pint           # code style (fixes; `composer lint` only checks)
 php artisan test            # whole suite (also: composer test, ./vendor/bin/pest)
 php artisan test --filter=test_name
 ./vendor/bin/pest tests/Feature/Critical/StockTest.php --filter="last unit"
@@ -33,6 +38,15 @@ php artisan schedule:work   # carts:prune-guests and inventory:verify run daily
 ```
 
 Tests need a `.env` with an `APP_KEY` (`cp .env.example .env && php artisan key:generate`); `phpunit.xml` sets the rest (in-memory SQLite).
+
+## Feedback loop
+
+Run `composer check` before saying a change is done; it stops at the first failure.
+
+- **Static analysis:** Larastan at level 5 (`phpstan.neon`). `phpstan-baseline.neon` holds known older findings: new code must not add to it, so fix the finding instead. Relations need a return type and a generic docblock (`@return HasMany<Review, $this>`), or the analyser cannot see them.
+- **Mocks:** every test runs with `Http::preventStrayRequests()` (`tests/TestCase.php`), so a test that reaches Stripe or Gemini fails. Use `FakeStripe`, `Http::fake()`, or a fake `LlmClient` or `PaymentRefunder`.
+- **Performance:** `tests/Feature/Performance/QueryBudgetTest.php` caps the queries per page and checks that adding products adds none. Fix an over-budget page with `with()` or `withCount()`; raise a budget only when the extra queries are needed.
+- **Security:** `composer security` runs `composer audit` and `npm audit`; CI reports them without failing. Auth rules are in `tests/Feature/Critical/RolesTest.php`.
 
 ## Layout (non-obvious parts only)
 
@@ -67,7 +81,7 @@ Tests need a `.env` with an `APP_KEY` (`cp .env.example .env && php artisan key:
 - Older tests are class-based PHPUnit in `tests/Feature`; newer critical-path tests are Pest in `tests/Feature/Critical`. `tests/Pest.php` applies `TestCase` and `RefreshDatabase` to that folder only, so Pest files elsewhere must opt in. New payment, stock and role tests go in `Critical`.
 - `Tests\TestCase` calls `withoutVite()`, so PHP tests need no frontend build.
 - `FakeStripe::install()` / `uninstall()` replaces Stripe's HTTP client, so the real `StripeClient`, controllers and webhook signature check run with no network. Use fakes for `PaymentRefunder` and `LlmClient` too.
-- Image-upload tests need the PHP GD extension.
+- Image-upload tests need the PHP GD extension; without it the two that draw an image are skipped.
 - Playwright starts its own app on `127.0.0.1:8001` with `database/e2e.sqlite`, runs `migrate:fresh --seed` plus `E2ESeeder`, and logs in once per role (`e2e/auth.setup.ts`). Fixtures: product `E2E Desk Lamp` ($20, stock 5), accounts `admin@example.com` and `customer@example.com`, password `password`.
 
 ## Docker and deployment
