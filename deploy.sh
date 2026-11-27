@@ -52,6 +52,10 @@ healthy() {
 
 start_stack() {
     docker compose up -d --remove-orphans
+    # Nginx looks up the address of "app" only when it starts. A deploy replaces the app container
+    # but leaves web alone (its image and config did not change), so web would keep talking to the
+    # old, dead address and answer 502. Recreate it so it finds the new one.
+    docker compose up -d --force-recreate --no-deps web
 }
 
 deploy() {
