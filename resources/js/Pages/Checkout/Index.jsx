@@ -1,10 +1,11 @@
+import CheckoutSteps from '@/Components/CheckoutSteps';
 import PageHeader from '@/Components/PageHeader';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
 import { useState, useEffect, useMemo } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
 const COUNTRIES = [
   { code: 'MA', name: 'Morocco' },
@@ -133,10 +134,16 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="font-display text-lg font-bold text-ink">Payment</h2>
-      <div className="rounded-lg border border-stroke bg-surface px-3 py-3">
+      <div>
+        <h2 className="font-display text-lg font-bold text-ink">Payment</h2>
+        {!addressComplete && (
+          <p className="mt-1 text-sm text-ink-muted">Fill in your shipping address first, then pay by card.</p>
+        )}
+      </div>
+      <div className={`rounded-lg border border-stroke bg-surface px-3 py-3 ${addressComplete ? '' : 'opacity-60'}`}>
         <CardElement
           options={{
+            disabled: !addressComplete,
             style: {
               base: {
                 color: theme.text,
@@ -156,11 +163,6 @@ function PaymentForm({ clientSecret, address, addressComplete, total }) {
       >
         {processing ? 'Processing…' : `Pay ${formatMoney(total)}`}
       </button>
-      {!addressComplete && (
-        <p className="text-center text-xs text-ink-muted">
-          Fill in your shipping address above to enable payment.
-        </p>
-      )}
     </form>
   );
 }
@@ -171,7 +173,7 @@ export default function Index({ cart, pricing, stripeKey, errors }) {
   const [address, setAddress] = useState({
     line1: '', line2: '', city: '', state: '', postal_code: '', country: 'MA',
   });
-  const stripePromise = useMemo(() => loadStripe(stripeKey), [stripeKey]);
+  const stripePromise = useMemo(() => loadStripe(stripeKey, { locale: 'en' }), [stripeKey]);
 
   useEffect(() => {
     window.axios
@@ -184,6 +186,8 @@ export default function Index({ cart, pricing, stripeKey, errors }) {
     <div className="bg-canvas text-ink">
       <div className="mx-auto max-w-4xl px-6 py-8">
         <Head title="Checkout" />
+
+        <CheckoutSteps current={2} />
 
         <PageHeader title="Checkout" />
         {error && <p className="mb-4 text-sm text-danger">{error}</p>}
@@ -205,19 +209,33 @@ export default function Index({ cart, pricing, stripeKey, errors }) {
           </div>
 
           <div className="order-first h-fit rounded-lg border border-stroke bg-surface p-4 lg:order-none">
-            <div className="font-medium text-ink">Order summary</div>
-            <div className="mt-3 space-y-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <div className="font-display text-lg font-bold text-ink">Order summary</div>
+              <Link
+                href="/cart"
+                className="rounded text-sm font-medium text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Edit cart
+              </Link>
+            </div>
+            <ul className="mt-3 space-y-3">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex justify-between gap-3 text-sm">
-                  <span className="text-ink-muted">
-                    {item.product.name}
-                    {item.variant && <span className="text-ink-muted/70"> ({item.variant.label})</span>}{' '}
-                    <span className="text-ink-muted/70">× {item.quantity}</span>
+                <li key={item.id} className="flex items-center gap-3 text-sm">
+                  <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-canvas">
+                    {item.product.image_url && (
+                      <img src={item.product.image_url} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-ink">{item.product.name}</span>
+                    <span className="block text-ink-muted">
+                      {item.variant && `${item.variant.label}, `}Qty {item.quantity}
+                    </span>
                   </span>
                   <span className="shrink-0 text-ink">{formatMoney(item.quantity * item.product.price_cents)}</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
             {pricing.discount_cents > 0 && (
               <div className="mt-3 space-y-2 border-t border-stroke pt-3 text-sm">
                 <div className="flex justify-between text-ink-muted">

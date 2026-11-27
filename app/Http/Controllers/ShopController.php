@@ -96,6 +96,7 @@ class ShopController extends Controller
             'product' => $product->load('category', 'variants'),
             'related' => $related,
             'ratings' => $ratings,
+            'reviewSummary' => $product->review_summary,
             'reviews' => $product->reviews()
                 ->with('user')
                 ->when($myReview, fn ($q) => $q->whereKeyNot($myReview->id))

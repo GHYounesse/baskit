@@ -53,6 +53,8 @@ export default defineConfig({
       CACHE_STORE: 'file',
       QUEUE_CONNECTION: 'sync',
       MAIL_MAILER: 'array',
+      // Never call the real AI service from a browser test (the queue is synchronous here).
+      GEMINI_API_KEY: '',
       BCRYPT_ROUNDS: '4',
       // Never talk to real Stripe from these tests.
       STRIPE_KEY: 'pk_test_e2e',

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\Search\ProductSearch;
 use App\Services\Search\StoreSearch;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
 class Category extends Model
@@ -31,7 +32,10 @@ class Category extends Model
         });
     }
 
-    public function products()
+    /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }

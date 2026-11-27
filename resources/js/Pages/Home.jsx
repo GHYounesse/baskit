@@ -1,6 +1,7 @@
 import ProductCard from '@/Components/ProductCard';
 import SpeedLines from '@/Components/SpeedLines';
 import ShopLayout from '@/Layouts/ShopLayout';
+import { ASK_EVENT } from '@/utils/assistant';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, usePage } from '@inertiajs/react';
 
@@ -12,6 +13,29 @@ const onPanelPrimary =
   'inline-flex h-12 items-center justify-center rounded-lg bg-[#12C982] px-6 font-semibold text-[#04231B] transition hover:bg-[#20D991] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-panel';
 const onPanelSecondary =
   'inline-flex h-12 items-center justify-center rounded-lg px-6 font-semibold text-white ring-1 ring-inset ring-white/35 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white';
+
+// Questions the assistant answers well from the store's own data; each one opens the chat and asks it.
+const EXAMPLE_QUESTIONS = ['Headphones under $150', 'Something for the kitchen', "What's best rated?"];
+
+const askChip =
+  'rounded-full px-4 py-2 text-sm font-medium text-white ring-1 ring-inset ring-white/35 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white';
+
+function AskAssistant() {
+  const ask = (message) => window.dispatchEvent(new CustomEvent(ASK_EVENT, { detail: { message } }));
+
+  return (
+    <div className="mt-10">
+      <p className="text-sm text-white/70">Not sure what to pick? Ask the shop assistant.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {EXAMPLE_QUESTIONS.map((question) => (
+          <button key={question} type="button" onClick={() => ask(question)} className={askChip}>
+            {question}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Where each hero photo lands inside its box, how it is tilted, and when it starts to move.
 // The tilt follows the brand's speed lines.
@@ -53,6 +77,8 @@ function HeroPhotos({ products }) {
 }
 
 function Hero({ hero, signedIn }) {
+  const { assistant } = usePage().props;
+
   return (
     <section className="relative overflow-hidden bg-panel text-white">
       <div className="text-[#12C982]">
@@ -84,6 +110,7 @@ function Hero({ hero, signedIn }) {
               </Link>
             )}
           </div>
+          {assistant?.enabled && <AskAssistant />}
         </div>
 
         {hero.length > 0 && <HeroPhotos products={hero} />}

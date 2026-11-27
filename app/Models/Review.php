@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Jobs\SummarizeProductReviews;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends Model
 {
@@ -21,12 +23,30 @@ class Review extends Model
 
     protected $appends = ['author'];
 
-    public function product()
+    protected static function booted(): void
+    {
+        $refresh = function (Review $review) {
+            if (config('ai.enabled')) {
+                SummarizeProductReviews::dispatch($review->product_id)->delay(now()->addMinute())->afterCommit();
+            }
+        };
+
+        static::saved($refresh);
+        static::deleted($refresh);
+    }
+
+    /**
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

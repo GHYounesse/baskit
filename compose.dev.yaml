@@ -23,7 +23,9 @@ services:
   vite:
     image: node:22-bookworm-slim
     working_dir: /app
-    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_DEV_ORIGIN: http://127.0.0.1:5173
+    command: sh -c "npm install --no-save --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
     ports:
       - "127.0.0.1:5173:5173"
     volumes:

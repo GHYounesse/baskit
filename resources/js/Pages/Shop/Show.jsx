@@ -6,7 +6,7 @@ import ShopLayout from '@/Layouts/ShopLayout';
 import VariantPicker, { missingChoice, resolveVariant } from '@/Components/VariantPicker';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -35,6 +35,20 @@ function LockIcon(props) {
     </svg>
   );
 }
+
+function CheckIcon(props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" {...props}>
+      <path d="M4.5 10.5l3.5 3.5 7.5-8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// What the shop really promises (see the home page): nothing about delivery times or returns, which it does not have.
+const ASSURANCES = [
+  'Cancel any time before it ships. The refund goes straight back to your card.',
+  'Every order gets a timeline and a tracking number once it ships.',
+];
 
 function StockStatus({ stock }) {
   if (stock <= 0) {
@@ -106,7 +120,7 @@ function QuantityStepper({ value, max, onChange, disabled }) {
   );
 }
 
-export default function Show({ product, related = [], ratings, reviews, myReview, canReview }) {
+export default function Show({ product, related = [], ratings, reviewSummary, reviews, myReview, canReview }) {
   const outOfStock = product.stock <= 0;
 
   // Sizes and colours: nothing can be added until each option is chosen.
@@ -146,12 +160,37 @@ export default function Show({ product, related = [], ratings, reviews, myReview
 
   const lineTotal = product.price_cents * data.quantity;
 
+  // On a phone the Add to cart button scrolls away, so a bar takes over while the form is out of view.
+  const formRef = useRef(null);
+  const [formInView, setFormInView] = useState(true);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form || typeof IntersectionObserver === 'undefined') return undefined;
+
+    const observer = new IntersectionObserver(([entry]) => setFormInView(entry.isIntersecting));
+    observer.observe(form);
+
+    return () => observer.disconnect();
+  }, [outOfStock]);
+
+  const showBuyBar = !outOfStock && !formInView;
+
+  const buyFromBar = () => {
+    if (missing) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      formRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      return;
+    }
+    post('/cart', { preserveScroll: true });
+  };
+
   return (
     // Same full-bleed canvas/ink scoping as the shop index (see ShopLayout).
     <div className="bg-canvas text-ink">
       <Head title={product.name} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className={`mx-auto max-w-6xl px-6 py-8 ${showBuyBar ? 'pb-28 md:pb-8' : ''}`}>
         <Link
           href={product.category ? `/shop?category=${product.category.slug}` : '/shop'}
           className="inline-flex items-center gap-1 rounded text-sm text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -179,16 +218,7 @@ export default function Show({ product, related = [], ratings, reviews, myReview
           </div>
 
           <div>
-            {product.category && (
-              <Link
-                href={`/shop?category=${product.category.slug}`}
-                className="inline-block rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-brand transition hover:opacity-80"
-              >
-                {product.category.name}
-              </Link>
-            )}
-
-            <h1 className="mt-3 font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
+            <h1 className="font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
               {product.name}
             </h1>
 
@@ -204,7 +234,17 @@ export default function Show({ product, related = [], ratings, reviews, myReview
               </a>
             )}
 
-            <div className="mt-3 flex items-baseline gap-4">
+            {reviewSummary && (
+              <a
+                href="#reviews"
+                className="mt-4 block max-w-prose rounded border-l-2 border-primary pl-3 text-sm leading-relaxed text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="line-clamp-2">{reviewSummary}</span>
+                <span className="mt-1 block text-xs">AI summary of customer reviews</span>
+              </a>
+            )}
+
+            <div className="mt-4 flex items-baseline gap-4">
               <span className="font-display text-3xl font-bold text-ink">
                 {formatMoney(product.price_cents)}
               </span>
@@ -217,8 +257,9 @@ export default function Show({ product, related = [], ratings, reviews, myReview
             {selected && <p className="mt-1 text-xs text-ink-muted">SKU {selected.sku}</p>}
 
             <form
+              ref={formRef}
               onSubmit={submit}
-              className="mt-6 rounded-lg border border-stroke bg-surface p-5"
+              className="mt-6 scroll-mt-24 rounded-lg border border-stroke bg-surface p-5"
             >
               {outOfStock ? (
                 <>
@@ -268,6 +309,15 @@ export default function Show({ product, related = [], ratings, reviews, myReview
               )}
             </form>
 
+            <ul className="mt-5 space-y-2 text-sm text-ink-muted">
+              {ASSURANCES.map((text) => (
+                <li key={text} className="flex gap-2">
+                  <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  {text}
+                </li>
+              ))}
+            </ul>
+
             {product.description && (
               <div className="mt-8">
                 <h2 className="font-display text-lg font-bold text-ink">About this product</h2>
@@ -279,9 +329,29 @@ export default function Show({ product, related = [], ratings, reviews, myReview
           </div>
         </div>
 
+        {showBuyBar && (
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-stroke bg-surface py-3 pl-4 pr-24 md:hidden">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-ink">{product.name}</p>
+                <p className="text-sm text-ink-muted">{formatMoney(lineTotal)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={buyFromBar}
+                disabled={processing}
+                className="h-11 shrink-0 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
+              >
+                {missing ? 'Choose options' : processing ? 'Adding...' : 'Add to cart'}
+              </button>
+            </div>
+          </div>
+        )}
+
         <ProductReviews
           product={product}
           ratings={ratings}
+          reviewSummary={reviewSummary}
           reviews={reviews}
           myReview={myReview}
           canReview={canReview}

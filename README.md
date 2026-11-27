@@ -3,387 +3,141 @@
 [![CI](https://github.com/GHYounesse/baskit/actions/workflows/ci.yml/badge.svg)](https://github.com/GHYounesse/baskit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A full-stack ecommerce app built with **Laravel 12**, **Inertia.js** and **React**: product catalog, guest and user carts, Stripe checkout (test mode), order history, an admin panel, and a custom brand design system with dark mode.
+A small online shop built with **Laravel 12**, **Inertia.js** and **React**. Browse products, fill a cart, pay with Stripe (test mode), and manage it all from an admin panel. It comes with dark mode and a built-in shopping assistant.
 
-<!-- LIVE DEMO: once deployed, uncomment and set the URL
-**[Live demo](https://your-demo-url.example)** · log in as `customer@example.com` / `password`, or `admin@example.com` / `password` for the admin panel. Stripe runs in test mode: use card `4242 4242 4242 4242`.
--->
+**[Live demo](https://shop.ghalloumyounes.dev)**
 
 <p align="center">
   <img src="docs/screenshots/shop.png" alt="Baskit shop page" width="900">
 </p>
 
-## Table of contents
+| Product page | Checkout | Admin | Dark mode |
+| --- | --- | --- | --- |
+| ![Product](docs/screenshots/product.png) | ![Checkout](docs/screenshots/checkout.png) | ![Admin](docs/screenshots/admin-dashboard.png) | ![Dark mode](docs/screenshots/dark-mode.png) |
 
-- [Screenshots](#screenshots) · [Features](#features) · [How payments work](#how-payments-work) · [Tech stack](#tech-stack)
-- [Getting started](#getting-started) · [Configuration](#configuration) · [Project structure](#project-structure) · [Development](#development) · [SEO](#seo) · [Docker and deployment](#docker-and-deployment) · [Roadmap](#roadmap)
+## What you get
 
-## Screenshots
+**For shoppers**
+- Search with live suggestions, typo help and filters by category
+- Product variants (size, colour), reviews and a wishlist
+- Guest cart that follows you when you log in, plus discount codes
+- Card checkout with Stripe, order history with a timeline, and self-service cancellation
+- A **shopping assistant** that answers from live store data, with no external AI service and nothing to pay for ("headphones under $150", "where is my order?")
 
-| Shop | Product page |
-| --- | --- |
-| ![Shop](docs/screenshots/shop.png) | ![Product](docs/screenshots/product.png) |
+**For admins**
+- Dashboard and analytics (revenue, orders, top products)
+- Products, variants, coupons and image uploads
+- Orders: ship, deliver, refund
+- An inventory log that records every stock change
 
-| Cart | Checkout |
-| --- | --- |
-| ![Cart](docs/screenshots/cart.png) | ![Checkout](docs/screenshots/checkout.png) |
+**Under the hood**
+- Payments are checked against Stripe on the server before an order exists
+- One order per payment, even if the browser and the webhook both report it
+- Stock is locked inside a transaction, and the payment is refunded if stock runs out
+- Prices are integer cents and always computed on the server
 
-| Admin dashboard | Admin orders |
-| --- | --- |
-| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Admin orders](docs/screenshots/admin-orders.png) |
+## Try it
 
-| Dark mode | Mobile |
-| --- | --- |
-| ![Dark mode](docs/screenshots/dark-mode.png) | ![Mobile](docs/screenshots/mobile.png) |
-
-## Features
-
-**Shopping**
-- Shopping assistant: a chat bubble in the corner that answers from live store data, with no external AI service and nothing to pay for. Ask it to find products ("headphones under $150", "something for the kitchen", "best rated"), check stock and sizes ("is the cotton t-shirt available in medium?"), and follow up naturally ("what about in blue?", "the second one", "show more"). Signed-in customers can ask where an order is, see its tracking number and timeline, and find out whether it can still be cancelled. It also explains discount codes, payment, wishlists and reviews. It only ever reads data, shows only the signed-in customer's own orders, and says so when it doesn't know something
-- Browse products by category (as tappable chips), with search, sorting and pagination
-- Full-text search with live suggestions: as you type, the search box shows matching products (with a photo, category and price) and categories, with the matched part of each name in bold. Searches rank by relevance (a hit in the name beats one in the description), match the start of words ("wire head" finds "Wireless Headphones"), ignore case and accents, offer "Did you mean ...?" for misspellings, and remember your recent searches. The box works fully by keyboard and with screen readers
-- Product detail page with a stock-aware quantity stepper, live line total and related products
-- Product variants (sizes and colours): a product can come in options, each with its own SKU and stock. Shoppers pick a size and colour (sold-out options are struck through, and Add to cart stays disabled until each choice is made); the cart, the order and the confirmation emails say which variant was bought, and stock comes off that variant only. Variants share the product's price. The server enforces the choice, so a variant product can't be added to the cart without one
-- Product images, with an admin upload flow and a stock-photo fallback for seeded demo data
-- Guest cart that is merged into the user's cart on login or registration
-- Stripe Elements card checkout, with a visible order summary and a Pay button that states the exact amount
-- Discount codes at the cart (percentage or fixed amount), with clear errors for expired, used-up or ineligible codes; the discount shows through checkout, the order page and the confirmation email
-- Product reviews: a 1-5 star rating with an optional comment, limited to customers who bought the product (cancelled orders don't count), one review each, editable and deletable by the author. Pages show the average, a rating breakdown and short author names ("Jane D."); admins can remove any review. The shop shows ratings on every card and can sort by top rated
-- Wishlist: a heart on every product card and product page saves items to the account; a Wishlist page lists them newest first with a quick "Add to cart"
-- Order history and order detail pages, each with a timeline of what has happened (placed, shipped, delivered, cancelled or refunded) and what is still to come, plus carrier and tracking number once shipped
-- Customers can cancel their own order until it ships; the payment is refunded to their card and the items return to stock
-- Role-based redirect after login/registration: admins land on the admin dashboard, everyone else lands on the shop
-
-**Payments**
-- Payments are verified server-side against Stripe before an order is created
-- Stripe webhook (`payment_intent.succeeded`) creates the order if the user never returns to the site
-- Idempotent order creation: one order per PaymentIntent, enforced by a unique index
-- Stock is checked and locked inside a database transaction; the payment is refunded if stock runs out after paying
-- Coupons are priced server-side and carried in the PaymentIntent metadata, so the webhook path applies the same discount. Usage limits are re-checked under a row lock when the order is created, and the payment is refunded if the last redemption was taken in the meantime
-- Refunds go back through Stripe with an idempotency key, so a retry can never refund twice. If Stripe refuses, nothing in the order changes. Refunds made in the Stripe dashboard sync back through the `charge.refunded` webhook, and a refunded order releases its coupon use
-- Order confirmation email, queued, sent once per order regardless of which flow (redirect or webhook) creates it
-
-**Admin**
-- Dashboard with revenue, order and product counts, and a low-stock list
-- Product management (create, edit, delete, activate, image upload), with dollar-based price input
-- Analytics: revenue, orders, average order and refunds for the last 7, 30 or 90 days, each compared with the period before. Charts for revenue by day (against the previous period), orders by weekday, top products and sales by category, drawn as plain SVG with no charting library. Every chart has hover and keyboard readouts and a table view, follows dark mode, and holds its previous picture while new data loads. Cancelled and refunded orders are left out of sales
-- Variant management: add, edit and remove a product's variants from its edit page, with a reason recorded for stock changes. A product's stock is the total of its variants; adding the first variant moves the product's own stock into them through the inventory log, and removing a variant takes its stock out the same way, so nothing is lost or invented
-- Inventory log: every change to a product's stock is recorded in an append-only ledger with the amount, the balance after, why (sold, returned, manual adjustment, product created), the order and the person involved, and an optional note. It shows on its own page (filter by product, reason or name) and on each product's edit page. Stock can't go below zero, and an admin's edit is applied to the stock on hand at that moment, so an order placed while a form is open is never overwritten. An integrity check flags any product whose stock no longer matches its history. Variants have their own ledger entries and running balances, checked both per variant and in total for the product
-- Order management: each order has a detail page with ship (carrier and tracking number), mark delivered, and a full refund with an optional reason and restock. Status changes are validated (you can't ship a refunded order), logged to the order timeline, and emailed to the customer. Refunded and cancelled orders don't count as revenue
-- Coupon management: percentage or fixed discounts, minimum order, usage limit, expiry, and an on/off switch. Each customer can use a code once, and a discount never takes an order below $0.50 (Stripe's minimum charge)
-- Authorization via a `ProductPolicy`/`OrderPolicy` pair, behind an `admin` route middleware
-
-**Design system**
-- A custom Baskit brand palette and typeface pairing (Baloo 2 for headings, Figtree for UI), defined as CSS custom properties and wired into Tailwind
-- Full dark mode support on the shop, cart, checkout, orders and admin pages, toggled from the nav and persisted in `localStorage`
-- Shared components for nav links, pagination, flash messages, order status badges and admin forms, so the same pattern renders identically everywhere it's used
-
-**Other**
-- Authentication (register, login, password reset, profile) via Laravel Breeze
-- Order access restricted to the owner or an admin (`OrderPolicy`)
-- Scheduled cleanup of abandoned guest carts
-- CI running Pint, tests and a frontend build
-
-## How payments work
-
-Orders can be created by two paths, the browser redirect and the Stripe webhook, and both end up in the same idempotent code path.
-
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant A as Baskit (Laravel)
-    participant S as Stripe
-
-    B->>A: POST /checkout/payment-intent
-    A->>S: Create PaymentIntent (amount from server-side cart)
-    S-->>A: client_secret
-    A-->>B: client_secret
-    B->>S: Confirm card payment (Stripe Elements)
-    par Redirect path
-        B->>A: POST /checkout/complete
-        A->>S: Retrieve PaymentIntent, verify status
-    and Webhook path
-        S->>A: payment_intent.succeeded (signed)
-    end
-    A->>A: OrderService: transaction, lock stock, create order
-    Note over A: Unique index on payment_intent_id,<br/>so only one order is created
-    alt Stock ran out after payment
-        A->>S: Refund
-    else Stock OK
-        A-->>B: Order confirmation (email queued once)
-    end
-```
-
-Key guarantees: amounts are computed server-side, payments are verified against Stripe before an order exists, stock is locked inside a transaction, and a user who closes the tab after paying still gets their order via the webhook.
-
-## Tech stack
-
-| Layer | Technology |
-| --- | --- |
-| Backend | Laravel 12, PHP 8.2+ |
-| Frontend | React 18, Inertia.js 2, Tailwind CSS 3, Vite |
-| Payments | Stripe (test mode) |
-| Database | SQLite by default, MySQL supported |
-| Tooling | Laravel Pint, PHPUnit, GitHub Actions |
-
-## Getting started
-
-### Prerequisites
-
-- PHP 8.2+ and Composer
-- Node.js 18+ and npm
-- SQLite (bundled with PHP) or MySQL
-- A free [Stripe account](https://dashboard.stripe.com/register) (test mode) and the [Stripe CLI](https://docs.stripe.com/stripe-cli)
-
-### Installation
+You need PHP 8.2+, Composer, Node 18+ and a free [Stripe](https://dashboard.stripe.com/register) test account.
 
 ```bash
 git clone https://github.com/GHYounesse/baskit.git
 cd baskit
-
-composer install
-npm install
-
-cp .env.example .env
-php artisan key:generate
-
-touch database/database.sqlite
-php artisan migrate --seed
-php artisan storage:link
+composer setup
 ```
 
-### Configure Stripe
+Add your Stripe test keys to `.env`:
 
-1. In the Stripe Dashboard (Test mode), open **Developers → API keys** and copy the keys into `.env`:
+```
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
+```
 
-   ```
-   STRIPE_KEY=pk_test_...
-   STRIPE_SECRET=sk_test_...
-   ```
-
-2. Forward webhooks to your local app and copy the signing secret it prints:
-
-   ```bash
-   stripe listen --events payment_intent.succeeded,charge.refunded --forward-to localhost:8000/stripe/webhook
-   ```
-
-   ```
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   ```
-
-3. Clear the config cache if you changed `.env` after starting the server:
-
-   ```bash
-   php artisan config:clear
-   ```
-
-### Run the app
-
-Use three terminals:
+Start everything:
 
 ```bash
-php artisan serve
+composer dev
 ```
 
-```bash
-npm run dev
-```
+Then open http://127.0.0.1:8000.
+
+To receive payment webhooks locally, run the [Stripe CLI](https://docs.stripe.com/stripe-cli) in another terminal and put the secret it prints in `.env` as `STRIPE_WEBHOOK_SECRET`:
 
 ```bash
 stripe listen --events payment_intent.succeeded,charge.refunded --forward-to localhost:8000/stripe/webhook
 ```
 
-Visit `http://127.0.0.1:8000`.
+### Demo logins
 
-### Demo accounts
-
-Seeding creates these accounts (password: `password`):
+Password for both is `password`.
 
 | Role | Email |
 | --- | --- |
 | Admin | `admin@example.com` |
 | Customer | `customer@example.com` |
 
-It also creates 10 random customers, useful for the admin order views. Accounts you register through the UI are regular customers, and land on the shop after signing in; the two accounts above land on `/` and `/admin` respectively.
+**Test card:** `4242 4242 4242 4242` (any future date, any CVC). Use `4000 0000 0000 0002` to see a decline.
 
-### Demo reviews
+**Coupons:** `WELCOME10` (10% off), `SAVE5` ($5 off $30+), `FLASH25` (25% off, first 50 uses), `SUMMER20` (expired, to see the error).
 
-Seeding also adds about 80 reviews across 30 products, each backed by a shipped order so it follows the same rule as real reviews. That means seeding adds those orders to the admin dashboard totals. Reseed with `php artisan migrate:fresh --seed` to start clean.
+## How a payment flows
 
-### Demo coupons
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant A as Baskit
+    participant S as Stripe
 
-Seeding also creates a few discount codes to try in the cart:
+    B->>A: Start checkout
+    A->>S: Create PaymentIntent (amount from the server-side cart)
+    B->>S: Pay with card
+    par Browser redirect
+        B->>A: Payment complete
+    and Webhook
+        S->>A: payment_intent.succeeded
+    end
+    A->>A: Create the order once (lock stock, check amount)
+    A-->>B: Confirmation email
+```
 
-| Code | Offer |
+## Settings
+
+The main `.env` values (see `.env.example` for the rest):
+
+| Variable | What it does |
 | --- | --- |
-| `WELCOME10` | 10% off, once per customer |
-| `SAVE5` | $5 off orders of $30 or more |
-| `FLASH25` | 25% off, first 50 redemptions only |
-| `SUMMER20` | Expired, to see the error message |
+| `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` | Stripe test keys |
+| `DB_CONNECTION` | `sqlite` locally, `pgsql` in production |
+| `MAIL_MAILER` | `log` by default, so emails go to `storage/logs/laravel.log` |
+| `ASSISTANT_ENABLED` | Set to `false` to turn the assistant off |
+| `GEMINI_API_KEY` | Optional. Turns on AI product drafting in the admin |
 
-### Test cards
+## Tech stack
 
-Use any future expiry, any CVC and any postal code.
-
-| Card number | Result |
-| --- | --- |
-| `4242 4242 4242 4242` | Payment succeeds |
-| `4000 0000 0000 0002` | Card is declined |
-
-## Configuration
-
-| Variable | Description |
-| --- | --- |
-| `STRIPE_KEY` | Stripe publishable key (`pk_test_...`) |
-| `STRIPE_SECRET` | Stripe secret key (`sk_test_...`) |
-| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_...`) |
-| `DB_CONNECTION` | `sqlite` (default) or `mysql` |
-| `QUEUE_CONNECTION` | Queue driver (`database` by default) — order confirmation emails are queued jobs |
-| `MAIL_MAILER` | `log` by default (emails write to `storage/logs/laravel.log`); set a real driver to actually deliver them |
-
-## Shopping assistant
-
-The assistant is built in, rule-based and deterministic: the same message always gets the same answer, every rule is tested, and it never makes up a price, a stock level or a policy. A message goes through three steps in `App\Services\Assistant`:
-
-1. `IntentClassifier` decides what is being asked (searching, availability, order status, cancelling, store questions, small talk). `EntityExtractor` pulls out the details: a price limit, a size, a colour, a category, an order number, and the product being talked about. It reuses the search spell-correction, so "headphnes" still works.
-2. `ProductReplies` and `OrderReplies` answer from the real data (`AssistantCatalog`, the customer's own orders), and wording about how the store works lives in `config/assistant.php`, so it matches what the app actually does.
-3. A small `AssistantContext` in the visitor's server-side session remembers the last search and product, which is what makes "what about in blue?" or "the second one" work. It holds only references, not personal details, and "new chat" clears it.
-
-It is read-only (it can point to the page where an order is cancelled, but never cancels anything), only looks at the signed-in customer's own orders, answers the same way for an order that doesn't exist and one that belongs to someone else, and renders everything as plain text, so nothing typed into it can become markup. Messages are rate limited (`ASSISTANT_RATE_LIMIT`, 30 a minute by default). Set `ASSISTANT_ENABLED=false` to turn it off.
-
-Everything goes through the `ConversationEngine` interface. To add a language model later (for example a free hosted one such as Groq or Gemini, or a local one through Ollama), write an engine that implements it and calls `AssistantCatalog` and the order lookups as its tools, then bind it in `AppServiceProvider`. Nothing else has to change.
-
-## Search
-
-Product search runs on SQLite's built-in full-text engine (FTS5), so it needs no extra service. A `product_search` index is created by a migration and kept in step automatically when products or categories change. Matches are ranked with BM25, weighting the name 10x, the category 4x and the description 1x.
-
-- `php artisan search:reindex` rebuilds the index from scratch (for example after importing products directly into the database).
-- On other databases (MySQL, Postgres) the app falls back to a portable `LIKE` search with the same rules, chosen automatically. There is nothing to index.
-- Both engines implement `App\Services\Search\ProductSearch`. To use Meilisearch, Typesense or Laravel Scout instead, write one more class with its four methods and bind it in `AppServiceProvider`.
-- The suggestions endpoint is `GET /search/suggest?q=...` (rate limited, JSON). Queries are reduced to plain words before they reach the engine, so search syntax and SQL can't be injected through the box.
-
-## Inventory integrity
-
-Each product's stock history starts from zero, so its changes must always add up to the stock on hand. `php artisan inventory:verify` checks that (and that every entry's running balance follows from the one before it), prints any mismatch and exits non-zero, so it works in CI or a cron job. The admin Inventory page shows the same check as a banner, and the scheduler runs it daily and logs an error on failure.
-
-Stock is changed through `App\Services\InventoryService`, which locks the product, refuses to go below zero and writes the ledger entry in the same transaction. A change made some other way (a seeder, tinker, a plain `update()`) is still recorded as a manual adjustment by a safety net on the `Product` model; only raw SQL bypasses the log, and the integrity check catches that.
-
-## Scheduled tasks
-
-Abandoned guest carts are deleted daily by `php artisan carts:prune-guests` (default: older than 30 days, change with `--days`). In production, add the standard Laravel scheduler cron entry:
-
-```
-* * * * * cd /path/to/baskit && php artisan schedule:run >> /dev/null 2>&1
-```
-
-Locally, `php artisan schedule:work` runs it.
-
-## Project structure
-
-```
-app/
-  Http/Controllers/     Shop, cart, checkout, orders, Stripe webhook, admin
-  Http/Requests/        Form requests for cart, checkout and admin product/order actions
-  Services/             CartService (guest/user carts), OrderService (order creation), Search/ (product search), Assistant/ (shopping assistant)
-  Listeners/            MergeGuestCart (runs on login)
-  Mail/                 OrderConfirmation
-  Policies/             OrderPolicy, ProductPolicy
-  Console/Commands/     carts:prune-guests
-resources/css/app.css   Baskit color tokens (light + dark) as CSS custom properties
-resources/js/
-  Pages/                Inertia pages (Shop, Cart, Checkout, Orders, Admin, Auth)
-  Layouts/              ShopLayout, AuthenticatedLayout, GuestLayout
-  Components/           Shared UI: nav links, Pagination, FlashBanner, OrderStatusBadge, form inputs
-  Components/Admin/     Admin-only shared components (product form fields)
-  utils/money.js        Cent-based money formatting shared across every page
-routes/web.php          All web routes
-tailwind.config.js      Maps the Baskit color tokens and fonts into Tailwind utilities
-```
+Laravel 12 · PHP 8.2+ · React 18 · Inertia 2 · Tailwind 3 · Vite · Stripe · SQLite (dev) / PostgreSQL (prod) · Pest, PHPUnit, Playwright · GitHub Actions
 
 ## Development
 
 ```bash
-./vendor/bin/pint        # code style
-php artisan test         # tests
-npm run test:e2e         # browser tests (Playwright; builds the frontend, runs on its own database)
-npm run build            # production frontend build
+./vendor/bin/pint     # code style
+php artisan test      # tests
+npm run test:e2e      # browser tests (Playwright)
+npm run build         # production build
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-## SEO
+## Learn more
 
-Search engines and link previews (WhatsApp, LinkedIn, X) do not run JavaScript, so Baskit writes its SEO tags **on the server**, in the HTML `<head>`.
-
-| What | Where |
-|---|---|
-| The facts about a page (title, description, image, official address, whether it may be listed) | `App\Support\PageSeo` |
-| The rules for the public pages: home, shop, category, product | `App\Support\StoreSeo` |
-| The `<head>` tags | `resources/views/partials/seo.blade.php`, included by `app.blade.php` |
-| `/robots.txt` and `/sitemap.xml` | `SeoController` and `App\Support\Sitemap` |
-
-**Safe by default.** A page that sets nothing is sent with `noindex, nofollow`, so the cart, checkout, orders and admin can never show up in search results by accident. A public page opts in by passing its own `seo` prop:
-
-```php
-return Inertia::render('Shop/Show', [
-    'seo' => StoreSeo::product($product, $ratings)->toArray(),
-    // ...
-]);
-```
-
-**What is listed, and how**
-- The home page, the shop, each category with products, and every active product. A product page also carries structured data (price, stock, average rating) so Google can show them in its results.
-- Searches are not listed (`noindex, follow`), pages 2 and up have their own address and title, and sorting points back to the plain address.
-- `/sitemap.xml` follows the same rules. `/robots.txt` blocks only areas that must never be visited; pages that carry a `noindex` tag stay open so robots can read it.
-- **Outside production, `robots.txt` blocks everything** (`APP_ENV` is not `production`), so a test copy of the site is never indexed. Production needs `APP_ENV=production`.
-- Every address is built from `APP_URL`, never from the request's `Host` header, so it must be the real public address (`https://shop.younesghalloum.dev`).
-
-**After the first deploy:** add the site in [Google Search Console](https://search.google.com/search-console), verify the domain with a DNS record in Cloudflare, then submit `https://shop.younesghalloum.dev/sitemap.xml`. Indexing takes days to weeks.
-
-## Docker and deployment
-
-The app ships as one image (PHP 8.3-FPM, built from the multi-stage [Dockerfile](Dockerfile)) that runs behind the host's Nginx on a single VPS. [compose.yaml](compose.yaml) starts five containers:
-
-| Service | Role |
-|---|---|
-| `app` | PHP-FPM; also copies the built assets to a volume for `web` |
-| `web` | Nginx, published only on `127.0.0.1:8081` (the host's Nginx proxies to it) |
-| `queue` | `queue:work`, sends the queued e-mails |
-| `scheduler` | `schedule:work`, runs the daily jobs |
-| `db` | PostgreSQL 16 on a named volume, never published |
-
-**Deploy flow:** every push to `main` runs [docker-deploy.yml](.github/workflows/docker-deploy.yml): tests, then the image is built and pushed to GHCR tagged with the git SHA and `latest`, then the workflow connects over SSH and runs [deploy.sh](deploy.sh) (pull, start, `migrate --force` in a one-off container, health check). If a migration or the health check fails, `deploy.sh` goes back to the previous tag by itself; if the public `/up` smoke test fails, the workflow rolls back. Migrations are never run at container start, and a rollback does not undo them.
-
-**Configuration:** the server's `.env` (never in git) is built from [.env.production.example](.env.production.example). `RUN_OPTIMIZE=true` caches config, routes and views when a container starts. `TRUSTED_PROXIES=*` makes Laravel trust the host Nginx's `X-Forwarded-Proto`, so URLs and secure cookies use https. Stripe runs in test mode only.
-
-**One-time server setup** (Docker, deploy user, host Nginx, HTTPS, GitHub secrets): see [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md).
-
-Try the production stack locally (needs Docker). It runs from a git-ignored `.docker-local/` folder, so your development `.env` stays untouched. `WITH_DEV=1` keeps Faker in this trial image only, so the demo seeders work; the production build never sets it.
-
-```bash
-docker build --build-arg WITH_DEV=1 -t ghcr.io/ghyounesse/baskit:local-demo .
-mkdir -p .docker-local/docker/nginx && cp compose.yaml .docker-local/ && cp docker/nginx/default.conf .docker-local/docker/nginx/
-cp .env.production.example .docker-local/.env
-```
-
-In `.docker-local/.env` set `APP_KEY` (`php artisan key:generate --show`), `DB_PASSWORD`, `IMAGE_TAG=local-demo`, `APP_URL=http://127.0.0.1:8081`, `SESSION_SECURE_COOKIE=false` and `MAIL_MAILER=log`. Then:
-
-```bash
-cd .docker-local
-docker compose up -d
-docker compose run --rm --no-deps -T app php artisan migrate --force
-docker compose run --rm --no-deps -T app php artisan db:seed --force
-```
-
-Open http://127.0.0.1:8081 (`admin@example.com` / `password`). Card payments need your Stripe **test** keys in that `.env`. Stop it with `docker compose down` (add `-v` to also delete the data).
-
-For local development, [compose.dev.yaml](compose.dev.yaml) provides PostgreSQL and the Vite dev server (`make up`, `make down`, `make logs`, `make test`).
+- [Design notes](docs/DESIGN.md): the assistant, search, inventory integrity, SEO, Docker and deployment
+- [Server setup](docs/SERVER-SETUP.md): putting it on a VPS
+- [Review guide](docs/REVIEW.md): which files need the closest look
 
 ## Roadmap
 
-- Dark mode / brand styling for the account profile pages, which still use the original Breeze styling
-- A full end-to-end test of the checkout payment flow (currently covered at the service/webhook level, not browser-driven)
-- User-facing search/sort on the admin order and product tables
+- Several photos per product, with an image gallery on the product page
+- A browser-driven test of the full payment flow
+- Search and sort on the admin order and product tables
 
 ## License
 

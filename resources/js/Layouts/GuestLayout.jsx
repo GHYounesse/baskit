@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import DemoBanner from '@/Components/DemoBanner';
 import SpeedLines from '@/Components/SpeedLines';
 import ThemeToggle from '@/Components/ThemeToggle';
 import { Link } from '@inertiajs/react';
@@ -35,6 +36,7 @@ export default function GuestLayout({ children }) {
 
             {/* Form panel */}
             <div className="flex flex-1 flex-col">
+                <DemoBanner />
                 <div className="flex items-center justify-between px-6 py-6 sm:px-10 lg:justify-end">
                     <Link href="/" className="lg:hidden">
                         <ApplicationLogo className="h-8 w-auto" />

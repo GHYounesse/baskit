@@ -9,6 +9,7 @@ use App\Http\Requests\Cart\UpdateCartItemQuantityRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Coupon;
+use App\Models\Product;
 use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -22,10 +23,31 @@ class CartController extends Controller
     {
         $cart = $this->currentCart($request);
 
+        $cart->load('items.product', 'items.variant');
+
         return Inertia::render('Cart/Index', [
-            'cart' => $cart->load('items.product', 'items.variant'),
+            'cart' => $cart,
             'pricing' => $this->carts->pricing($cart, $request->user()),
+            // An empty cart suggests where to go next; a full one does not need the query.
+            'suggestions' => $cart->items->isEmpty() ? $this->popularProducts() : [],
         ]);
+    }
+
+    /**
+     * The most-reviewed products that can be bought right now.
+     */
+    private function popularProducts()
+    {
+        return Product::query()
+            ->with('category')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->where('is_active', true)
+            ->where('stock', '>', 0)
+            ->orderByDesc('reviews_count')
+            ->latest()
+            ->limit(4)
+            ->get();
     }
 
     public function store(AddCartItemRequest $request)

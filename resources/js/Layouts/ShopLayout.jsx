@@ -1,6 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import AssistantWidget from '@/Components/Assistant/AssistantWidget';
+import DemoBanner from '@/Components/DemoBanner';
 import FlashBanner from '@/Components/FlashBanner';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -41,6 +42,7 @@ export default function ShopLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-canvas text-ink">
+            <DemoBanner />
             <nav className="border-b border-stroke bg-surface">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-1">

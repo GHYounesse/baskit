@@ -1,5 +1,6 @@
 import OrderStatusBadge from '@/Components/OrderStatusBadge';
 import { StarRating } from '@/Components/StarRating';
+import { ASK_EVENT } from '@/utils/assistant';
 import { formatMoney } from '@/utils/money';
 import { Link, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -298,6 +299,24 @@ export default function AssistantWidget() {
     }
     inputRef.current?.focus();
   };
+
+  // Elsewhere on the page (the home hero) a button can ask the assistant a question. The ref keeps
+  // the listener pointing at the latest send, so it is added once rather than on every render.
+  const sendRef = useRef(send);
+  useEffect(() => {
+    sendRef.current = send;
+  });
+
+  useEffect(() => {
+    const ask = (event) => {
+      setOpen(true);
+      sendRef.current(String(event.detail?.message ?? ''));
+    };
+
+    window.addEventListener(ASK_EVENT, ask);
+
+    return () => window.removeEventListener(ASK_EVENT, ask);
+  }, []);
 
   if (!assistant?.enabled) return null;
 

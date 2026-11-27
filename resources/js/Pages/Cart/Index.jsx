@@ -1,4 +1,6 @@
+import CheckoutSteps from '@/Components/CheckoutSteps';
 import PageHeader from '@/Components/PageHeader';
+import ProductCard from '@/Components/ProductCard';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { formatMoney } from '@/utils/money';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
@@ -46,10 +48,10 @@ function CartRow({ item }) {
   const lineTotal = item.quantity * item.product.price_cents;
 
   return (
-    <div className="flex items-center gap-4 border-b border-stroke py-4 last:border-b-0">
+    <div className="flex items-start gap-4 border-b border-stroke py-5 last:border-b-0">
       <Link
         href={`/products/${item.product.slug}`}
-        className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-canvas"
+        className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-canvas sm:h-24 sm:w-24"
       >
         {item.product.image_url ? (
           <img src={item.product.image_url} alt={item.product.name} className="h-full w-full object-cover" />
@@ -78,7 +80,7 @@ function CartRow({ item }) {
         </div>
       </div>
 
-      <div className="shrink-0 font-semibold text-ink">{formatMoney(lineTotal)}</div>
+      <div className="shrink-0 font-display text-lg font-bold text-ink">{formatMoney(lineTotal)}</div>
     </div>
   );
 }
@@ -148,19 +150,51 @@ function CouponBox({ coupon, error: couponError }) {
   );
 }
 
-function EmptyCart() {
+function EmptyCart({ suggestions, loggedIn }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-stroke py-20 text-center">
-      <BasketIcon className="h-8 w-8 text-ink-muted/50" />
-      <div className="font-medium text-ink">Your cart is empty</div>
-      <Link href="/shop" className="text-sm font-medium text-primary hover:text-primary-hover">
-        Browse the shop
-      </Link>
+    <div>
+      <div className="flex items-start gap-4 py-4">
+        <BasketIcon className="mt-1 h-10 w-10 shrink-0 text-primary" />
+        <div>
+          <h2 className="font-display text-2xl font-bold text-ink">Your cart is empty</h2>
+          <p className="mt-1 max-w-prose text-ink-muted">
+            {loggedIn
+              ? 'Add something and it will wait for you here.'
+              : 'Add something and it will wait for you here. If you log in, your cart comes with you.'}
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <Link
+              href="/shop"
+              className="inline-flex h-11 items-center rounded-lg bg-primary px-5 font-semibold text-primary-on transition hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+            >
+              Start shopping
+            </Link>
+            {!loggedIn && (
+              <Link href="/login" className="text-sm font-medium text-primary hover:text-primary-hover">
+                Log in
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {suggestions.length > 0 && (
+        <section className="mt-10" aria-labelledby="popular-heading">
+          <h2 id="popular-heading" className="font-display text-xl font-bold text-ink">
+            Popular right now
+          </h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {suggestions.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-export default function Index({ cart, pricing }) {
+export default function Index({ cart, pricing, suggestions = [] }) {
   const { auth } = usePage().props;
 
   return (
@@ -168,22 +202,30 @@ export default function Index({ cart, pricing }) {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <Head title="Your cart" />
 
+        {cart.items.length > 0 && <CheckoutSteps current={1} />}
+
         <PageHeader title="Your cart" />
 
         {cart.items.length === 0 ? (
-          <div>
-            <EmptyCart />
-          </div>
+          <EmptyCart suggestions={suggestions} loggedIn={Boolean(auth.user)} />
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="rounded-lg border border-stroke bg-surface px-4 lg:col-span-2">
-              {cart.items.map((item) => (
-                <CartRow key={item.id} item={item} />
-              ))}
+            <div className="lg:col-span-2">
+              <div className="rounded-lg border border-stroke bg-surface px-4">
+                {cart.items.map((item) => (
+                  <CartRow key={item.id} item={item} />
+                ))}
+              </div>
+              <Link
+                href="/shop"
+                className="mt-4 inline-block rounded text-sm font-medium text-primary hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Continue shopping
+              </Link>
             </div>
 
-            <div className="h-fit rounded-lg border border-stroke bg-surface p-4">
-              <div className="font-medium text-ink">Order summary</div>
+            <div className="h-fit rounded-lg border border-stroke bg-surface p-4 lg:sticky lg:top-6">
+              <div className="font-display text-lg font-bold text-ink">Order summary</div>
               <div className="mt-3 flex items-center justify-between text-sm text-ink-muted">
                 <span>Subtotal</span>
                 <span>{formatMoney(pricing.subtotal_cents)}</span>
@@ -203,8 +245,11 @@ export default function Index({ cart, pricing }) {
                 href="/checkout"
                 className="mt-4 block rounded-lg bg-primary py-3 text-center text-sm font-semibold text-primary-on transition hover:bg-primary-hover"
               >
-                {auth.user ? 'Checkout' : 'Log in to checkout'}
+                {auth.user ? 'Go to checkout' : 'Log in to checkout'}
               </Link>
+              <p className="mt-3 text-center text-xs text-ink-muted">
+                Cancel any time before it ships. The refund goes back to your card.
+              </p>
             </div>
           </div>
         )}

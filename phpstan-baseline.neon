@@ -1,0 +1,157 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$user of class Illuminate\\Auth\\Events\\Verified constructor expects Illuminate\\Contracts\\Auth\\MustVerifyEmail, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Auth/VerifyEmailController.php
+
+		-
+			message: '#^Parameter \#1 \$params of method Stripe\\Service\\PaymentIntentService\:\:create\(\) expects array\{allowed_payment_method_types\?\: array\<string\>, amount\: int, amount_details\?\: array\{discount_amount\?\: int\|null, enforce_arithmetic_validation\?\: bool, line_items\?\: array\<array\{discount_amount\?\: int, payment_method_options\?\: array\{card\?\: array\{commodity_code\?\: string\}, card_present\?\: array\{commodity_code\?\: string\}, klarna\?\: array\{image_url\?\: string, product_url\?\: string, reference\?\: string, subscription_reference\?\: string\}, paypal\?\: array\{category\?\: string, description\?\: string, sold_by\?\: string\}\}, product_code\?\: string, product_name\: string, quantity\: int, tax\?\: array\{total_tax_amount\: int\}, unit_cost\: int, unit_of_measure\?\: string\}\>\|null, shipping\?\: array\{amount\?\: int\|null, from_postal_code\?\: string\|null, to_postal_code\?\: string\|null\}\|null, tax\?\: array\{total_tax_amount\: int\}\|null\}, application_fee_amount\?\: int, automatic_payment_methods\?\: array\{allow_redirects\?\: string, enabled\: bool\}, capture_method\?\: string, confirm\?\: bool, confirmation_method\?\: string, \.\.\.\}\|null, array\{amount\: int, currency\: ''usd'', metadata\: array\{user_id\?\: int\<1, max\>, coupon_id\?\: int\<1, max\>\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/CheckoutController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Category\:\:\$thumbs\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/HomeController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Category\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/HomeController.php
+
+		-
+			message: '#^Access to an undefined property Stripe\\StripeObject\:\:\$payment_intent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeWebhookController.php
+
+		-
+			message: '#^Access to an undefined property Stripe\\StripeObject\:\:\$refunded\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeWebhookController.php
+
+		-
+			message: '#^Parameter \#1 \$intent of method App\\Services\\OrderService\:\:createFromPaymentIntent\(\) expects Stripe\\PaymentIntent, Stripe\\StripeObject given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/StripeWebhookController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\CartService\:\:mergeGuestCart\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Listeners/MergeGuestCart.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\AssistantCatalog\:\:bestSellers\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\Product\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\AssistantCatalog\:\:bySlug\(\) should return App\\Models\\Product\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\AssistantCatalog\:\:find\(\) should return App\\Models\\Product\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\AssistantCatalog\:\:newest\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\Product\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Product\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Product\)\: bool given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sortBy\(\) expects array\<array\{string, string\}\|\(callable\(Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Model\)\: mixed\)\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string\>\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string, Closure\(App\\Models\\Product\)\: \(int\<0, max\>\|false\) given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sortBy\(\) expects array\<array\{string, string\}\|\(callable\(Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Model\)\: mixed\)\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string\>\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string, Closure\(App\\Models\\Product\)\: \(int\|string\|false\) given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Parameter \#1 \$products of method App\\Services\\Assistant\\AssistantCatalog\:\:sorted\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\Product\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Assistant/AssistantCatalog.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/ProductReplies.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/ProductReplies.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/ProductReplies.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Search/FtsProductSearch.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Search/LikeProductSearch.php
+
+		-
+			message: '#^Offset ''count'' on array\{count\: int, average\: float\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Support/StoreSeo.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: database/seeders/VariantSeeder.php

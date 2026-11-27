@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class ReviewSeeder extends Seeder
 {
@@ -14,34 +16,6 @@ class ReviewSeeder extends Seeder
      * Ratings skew positive, like most real storefronts.
      */
     private const RATING_WEIGHTS = [5 => 45, 4 => 30, 3 => 15, 2 => 7, 1 => 3];
-
-    private const COMMENTS = [
-        5 => [
-            'Exactly what I was hoping for. Arrived quickly and works perfectly.',
-            'Great quality for the price. I would buy this again.',
-            'Better than expected. Packaging was neat and it feels well made.',
-            'Love it. Already recommended it to two friends.',
-            null,
-        ],
-        4 => [
-            'Really good overall. One small thing I would change, but I am happy with it.',
-            'Solid purchase. Does what it says and feels durable.',
-            'Very nice. Took a day to get used to, now I use it all the time.',
-            null,
-        ],
-        3 => [
-            'It is fine. Does the job, though nothing special.',
-            'Decent, but I expected a little more for the price.',
-            null,
-        ],
-        2 => [
-            'Not quite what the photos suggested. Usable, but a bit disappointing.',
-            'Works, but the finish is not great.',
-        ],
-        1 => [
-            'Did not meet my expectations at all.',
-        ],
-    ];
 
     /**
      * Demo reviews on a spread of products. Each one is backed by a delivered
@@ -55,8 +29,9 @@ class ReviewSeeder extends Seeder
             return;
         }
 
+        $comments = require database_path('seeders/data/reviews.php');
         $customers = User::where('is_admin', false)->get();
-        $products = Product::where('is_active', true)->inRandomOrder()->limit(30)->get();
+        $products = Product::with('category')->where('is_active', true)->inRandomOrder()->limit(40)->get();
 
         if ($customers->isEmpty() || $products->isEmpty()) {
             return;
@@ -78,7 +53,7 @@ class ReviewSeeder extends Seeder
                     'status' => 'delivered',
                     'total_cents' => $product->price_cents,
                     'tracking_carrier' => 'UPS',
-                    'tracking_number' => '1Z'.strtoupper(fake()->bothify('??########')),
+                    'tracking_number' => '1Z'.strtoupper(Str::random(10)),
                     'shipped_at' => $shippedAt,
                     'delivered_at' => $deliveredAt,
                     'created_at' => $when,
@@ -101,7 +76,7 @@ class ReviewSeeder extends Seeder
                     'product_id' => $product->id,
                     'user_id' => $user->id,
                     'rating' => $rating,
-                    'body' => fake()->randomElement(self::COMMENTS[$rating]),
+                    'body' => Arr::random(($comments[$product->category?->slug] ?? $comments['electronics'])[$rating]),
                     // The review comes a few days after the order.
                     'created_at' => $when->copy()->addDays(random_int(2, 7)),
                     'updated_at' => $when->copy()->addDays(random_int(2, 7)),

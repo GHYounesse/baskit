@@ -2,13 +2,17 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * The demo data: accounts, the catalogue, variants, coupons and reviews. Needs
+ * no Faker, so `php artisan db:seed --force` runs inside the production image.
+ *
+ * Model events stay on (no WithoutModelEvents): they write each product's
+ * stock ledger and keep the search index in step.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
@@ -21,6 +25,7 @@ class DatabaseSeeder extends Seeder
             VariantSeeder::class,
             CouponSeeder::class,
             ReviewSeeder::class,
+            DemoOrderSeeder::class,
         ]);
     }
 }

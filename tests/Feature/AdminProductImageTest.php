@@ -13,6 +13,16 @@ class AdminProductImageTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * UploadedFile::fake()->image() draws a real image, which needs the GD extension (CI has it).
+     */
+    private function requireGd(): void
+    {
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('The PHP GD extension is not installed.');
+        }
+    }
+
     private function admin(): User
     {
         return User::factory()->create(['is_admin' => true]);
@@ -20,6 +30,8 @@ class AdminProductImageTest extends TestCase
 
     public function test_admin_can_create_product_with_image(): void
     {
+        $this->requireGd();
+
         Storage::fake('public');
         $image = UploadedFile::fake()->image('product.jpg');
 
@@ -39,6 +51,8 @@ class AdminProductImageTest extends TestCase
 
     public function test_replacing_image_deletes_the_old_one(): void
     {
+        $this->requireGd();
+
         Storage::fake('public');
         $product = Product::factory()->create(['image_path' => 'products/old.jpg']);
         Storage::disk('public')->put('products/old.jpg', 'fake');

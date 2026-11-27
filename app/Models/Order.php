@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 class Order extends Model
@@ -45,17 +47,26 @@ class Order extends Model
         return $this->total_cents + $this->discount_cents;
     }
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function items()
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function events()
+    /**
+     * @return HasMany<OrderEvent, $this>
+     */
+    public function events(): HasMany
     {
         return $this->hasMany(OrderEvent::class)->orderBy('created_at')->orderBy('id');
     }

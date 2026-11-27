@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -19,19 +20,30 @@ class AnalyticsService
     private const WEEKDAYS = [1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat', 7 => 'Sun'];
 
     /**
+     * Just the headline numbers and the revenue line, for the dashboard: the same figures as
+     * report() without the top products, categories and weekdays.
+     *
+     * @return array{kpis: array<string, mixed>, revenueSeries: list<array<string, mixed>>}
+     */
+    public function trend(int $days): array
+    {
+        [$start, $end, $previousStart, $current, $previous] = $this->window($days);
+
+        return [
+            'kpis' => [
+                'current' => $this->summarize($current),
+                'previous' => $this->summarize($previous),
+            ],
+            'revenueSeries' => $this->dailySeries($current, $previous, $start, $previousStart, $days),
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function report(int $days): array
     {
-        $end = now()->endOfDay()->toImmutable();
-        $start = $end->subDays($days - 1)->startOfDay();
-        $previousStart = $start->subDays($days);
-
-        $orders = Order::whereBetween('created_at', [$previousStart, $end])
-            ->get(['id', 'total_cents', 'status', 'created_at']);
-
-        $current = $orders->filter(fn (Order $o) => $o->created_at->gte($start));
-        $previous = $orders->filter(fn (Order $o) => $o->created_at->lt($start));
+        [$start, $end, $previousStart, $current, $previous] = $this->window($days);
 
         return [
             'period' => [
@@ -48,6 +60,26 @@ class AnalyticsService
             'categories' => $this->categories($start, $end),
             'weekdays' => $this->weekdays($current),
         ];
+    }
+
+    /**
+     * The last $days days and the same number before them, with the orders placed in each.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: CarbonImmutable, 3: Collection<int, Order>, 4: Collection<int, Order>}
+     */
+    private function window(int $days): array
+    {
+        $end = now()->endOfDay()->toImmutable();
+        $start = $end->subDays($days - 1)->startOfDay();
+        $previousStart = $start->subDays($days);
+
+        $orders = Order::whereBetween('created_at', [$previousStart, $end])
+            ->get(['id', 'total_cents', 'status', 'created_at']);
+
+        $current = $orders->filter(fn (Order $o) => $o->created_at->gte($start));
+        $previous = $orders->filter(fn (Order $o) => $o->created_at->lt($start));
+
+        return [$start, $end, $previousStart, $current, $previous];
     }
 
     /**
